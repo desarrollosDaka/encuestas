@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted, defineEmits } from 'vue';
-import obtenerCookiesUsuario from '../../composables/cookies'
-import ObtenerFecha from '../../composables/ObtenerFecha';
+import obtenerCookiesUsuario from '../../function/cookies'
+import ObtenerFecha from '../../function/ObtenerFecha';
 import LoadAnswerOptions from '../../components/multiple_choice/LoadAnswerOptions'
 import ServiceQuestion from '../../services/Questions'
 import ServiceAnswerOptions from '../../services/AnswerOptions'
@@ -10,7 +10,7 @@ import ServiceLibraryAnswers from '../../services/LibraryAnswers'
 import Swal from "sweetalert2"
 import LogicQuestion from '../LogicQuestion'
 import { toast } from 'vue3-toastify';
-import validatePropertyAndValue from '../../composables/validateAndValue'
+import validatePropertyAndValue from '../../function/validateAndValue'
 import ServiceQuestionBranches from '../../services/QuestionBranches'
 import verifySurveyQuestion from '@/composables/verifySurveyQuestion';
 import notify from '@/composables/notify';
@@ -99,7 +99,7 @@ onMounted(async () => {
 })
 
 async function deleteQuestion(id) {
-    
+    loading.value = true
     const isResponse = await verifySurveyQuestion(props?.idSurvey,id)//verificar que no existan respuestas para esa pregunta
     const message = 'Esta pregunta, ya tiene respuestas de usuarios. No se puede eliminar'
 
@@ -119,7 +119,7 @@ async function deleteQuestion(id) {
         cancelButtonText: "No, Cancelar!",
     }).then(async (result) => {
         if (result.value) {
-           
+
             //Aqui Eliminamos en el Backend
             const where = {
                 IdQuestion: id
@@ -332,11 +332,11 @@ async function delQuestionLibrary(e) {
 async function addLibrary(e, inlibrary) {
 
     loading.value = true
-
     if (inlibrary) {
         delQuestionLibrary(e)
         return
     }
+
 
 
     const service_question_library = new ServiceQuestion()
@@ -344,7 +344,6 @@ async function addLibrary(e, inlibrary) {
 
     const service_answer_library = new ServiceAnswerOptions()
     const bd_service_answer_library = service_answer_library.getFuentesData()
-
 
     const whereQuestion = {
         IdEncuesta: props?.idSurvey,
@@ -363,7 +362,7 @@ async function addLibrary(e, inlibrary) {
     await service_answer_library.unique({ params: whereAnswers, token: token })
 
 
-    // ALMACENO EN UN OBJECTO LOS DATOS QUE NECESITO DE QUESTION(PREGUNTA)
+    // ALMACENO EN UN OBJECTO LOS DATOS QUE NECESITO DE QUESTION
 
     const dataLibraryQuestion = {
         IdQuestion: e,
@@ -379,8 +378,8 @@ async function addLibrary(e, inlibrary) {
         theme: 'dark',
     });
 
-    // REALIZO EL INSERT DE QUESTION A LA TABLA LIBRARY
-     await service_library_question.add({ data: dataLibraryQuestion, token: token })
+    // REALIZO LA INSERCION DE QUESTION A LA TABLA LIBRARY
+    const response_questionLibrary = await service_library_question.add({ data: dataLibraryQuestion, token: token })
 
     // ALMACENO EN UN OBJECTO LOS DATOS QUE NECESITO DE ANSWER
     try {
@@ -394,7 +393,7 @@ async function addLibrary(e, inlibrary) {
                 UsrCrea: userName.toUpperCase()
             }
 
-         await service_library_answer.add({ data: dataLibraryAnswer, token: token })
+            const response_answerLibrary = await service_library_answer.add({ data: dataLibraryAnswer, token: token })
         }
 
         // ACTUALIZO EL ITEM PARA INDICAR QUE LA QUESTION ESTA EN LA LIBRERIA
@@ -410,7 +409,7 @@ async function addLibrary(e, inlibrary) {
             FecAct: ObtenerFecha()
         }
 
-         await service_question.update({ data: data, params: whereQuestion_forLibrary, token: token })
+        const response_question = await service_question.update({ data: data, params: whereQuestion_forLibrary, token: token })
 
         toast.clearAll();
         window.location.reload()
@@ -441,24 +440,24 @@ async function showAllOptions(e) {
 
     try {
         loading.value = true
-const showAllOptions = ! e.ShowAllOptions
+        const showAllOptions = ! e.ShowAllOptions
 
-const where = {
-    IdQuestion: e.IdQuestion,
-    IdEncuesta: e.IdEncuesta
-}
+        const where = {
+            IdQuestion: e.IdQuestion,
+            IdEncuesta: e.IdEncuesta
+        }
 
-const data = {
-    ShowAllOptions: showAllOptions,
-    UsrAct: userName.toUpperCase(),
-    FecAct: ObtenerFecha()
-}
+        const data = {
+            ShowAllOptions: showAllOptions,
+            UsrAct: userName.toUpperCase(),
+            FecAct: ObtenerFecha()
+        }
 
-msgNotification.value = true
-msgNotificationDelay()
-await service_question.update({ data: data, params: where, token: token })
-await updateSurveyAudit(props?.idSurvey,userName.toUpperCase(), token , ObtenerFecha())
-window.location.reload()
+        msgNotification.value = true
+        msgNotificationDelay()
+        await service_question.update({ data: data, params: where, token: token })
+        await updateSurveyAudit(props?.idSurvey,userName.toUpperCase(), token , ObtenerFecha())
+        window.location.reload()
     } catch (error) {
         console.error(error)
     }

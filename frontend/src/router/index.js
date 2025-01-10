@@ -1,22 +1,9 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import obtenerCookiesUsuario  from '../composables/cookies'
-// import AboutView from '../views/aboutView.vue'
-// import Auth from '../views/authView.vue'
-//import NoFoundPage from '../views/noFoundPageView.vue'
-// import MySurveysView from '@/views/mySurveysView.vue'
- import IsActiveUuid from '../composables/isActiveUuid'
-// import Profile from '../views/profileUserView.vue'
-// import CreateUsersView from '../views/createUsersView.vue'
-// import CreateSurvey from '../views/createSurveyView.vue'
-// import TakeSurvey from '../views/takeSurveyView.vue'
-// import EndSurvey from '../views/endSurveyView.vue'
-// import SurveyResult from '../views/surveyResultView.vue'
-// import Library from '../views/libraryView.vue'
-// import DrapDrop from '../views/orderQuestionsView.vue'
+import obtenerCookiesUsuario  from '../function/cookies'
+import IsActiveUuid from '../function/isActiveUuid'
+import Auth from '@/views/authView.vue'
 const routes = [
  
-
-    
     {
         path: '/',
         name: '/',
@@ -38,14 +25,14 @@ const routes = [
       {
         path: '/auth',
         name: 'auth',
-        component: () => import('@/views/authView.vue'),
+        component: Auth,
         meta:{
           requireAuth: false
         }
       },
 
       {
-        path: '/mysurveys',
+        path: '/mysurveys/:id?',
         name: 'mysurveys',
         component: () => import('@/views/mySurveysView.vue'),
         meta:{
@@ -111,6 +98,25 @@ const routes = [
         path: '/OrderQuestions/:id',
         name: 'OrderQuestions',
         component: () => import('@/views/orderQuestionsView.vue'),
+        meta:{
+          requireAuth: true
+        }
+      },
+
+      {
+        path: '/evaluations',
+        name: 'evaluations',
+        component: () => import('@/views/createCategoryEvaluationsView.vue'),
+        meta:{
+          requireAuth: true
+        }
+      },
+
+      
+      {
+        path: '/resultsSurvey/:id',
+        name: 'resultsSurvey',
+        component: () => import('@/views/seeResultsSurveyView.vue'),
         meta:{
           requireAuth: true
         }

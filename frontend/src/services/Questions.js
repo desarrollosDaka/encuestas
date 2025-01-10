@@ -1,10 +1,10 @@
 import { ref } from 'vue'
 import axios from 'axios';
-import Entorno from '../composables/entorno'
-import FormatearFecha from '../composables/FormatearFecha'
-import  ErrorConnectios from '../composables/errorsConnection'
+import Entorno from '../function/entorno'
+import FormatearFecha from '../function/FormatearFecha'
+import  ErrorConnectios from '../function/errorsConnection'
 import { toast } from 'vue3-toastify';
-import Database from "../composables/database";
+import Database from "../function/database";
 
 const DB = Database()
 const { RUTA } = Entorno();
@@ -106,8 +106,9 @@ class Service{
         
         const url = `${RUTA}/Questions/delete`
         let response = null
-        await axios.put(url, { params }, {
-          headers: { 'Authorization': `Bearer ${token}` }
+        await axios.delete(url, {
+          headers: { 'Authorization': `Bearer ${token}` },
+          data:{ params }
       })
           .then(function (resp) {
             response = resp
@@ -142,12 +143,12 @@ class Service{
     })
         .then(function (resp) {
           response = resp
-          // toast.success("Registro actualizado", {
-          //       position: toast.POSITION.BOTTOM_LEFT,
-          //     transition: toast.TRANSITIONS.SLIDE,
-          //     autoClose: 2000,
-          //     theme: 'dark',
-          // });
+          toast.success("Registro actualizado", {
+                position: toast.POSITION.BOTTOM_LEFT,
+              transition: toast.TRANSITIONS.SLIDE,
+              autoClose: 2000,
+              theme: 'dark',
+          });
 
         })
         .catch(function (error) {

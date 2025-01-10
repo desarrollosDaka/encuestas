@@ -1,18 +1,16 @@
 <!-- EDITAR SELECCIONAR UNA  -->
 <script setup>
 import { ref, onMounted, defineEmits } from 'vue';
-import obtenerCookiesUsuario from '../../composables/cookies'
-import ObtenerFecha from '../../composables/ObtenerFecha';
+import obtenerCookiesUsuario from '../../function/cookies'
+import ObtenerFecha from '../../function/ObtenerFecha';
 import ServiceQuestion from '../../services/Questions'
 import ServiceAnswerOptions from '../../services/AnswerOptions'
 import generateUuid from 'generate-uuid';
 import { toast } from 'vue3-toastify';
 import LogicQuestion from '../LogicQuestion'
-import validatePropertyAndValue from '../../composables/validateAndValue'
+import validatePropertyAndValue from '../../function/validateAndValue'
 import ServiceQuestionBranches from '../../services/QuestionBranches'
 import updateSurveyAudit from '@/composables/updateSurvey';
-import Modal from '@/components/modal/modal.vue'
-///import ModalQuestionJump from '@/components/modal/questionJump.vue'
 
 const service_question_branches = new ServiceQuestionBranches()
 const service_question = new ServiceQuestion()
@@ -42,11 +40,10 @@ const addLogicJumpQuestion = ref()
 
 const addLogicIdJumpQuestion = ref()
 
-const twoDefault = ref([1, 2])
-const oneDefault = ref([3, 4, 5])
+const twoDefault = ref([1, 2]) //PREGUNTAS CON OPCIONES MULTIPLES
+const oneDefault = ref([4, 5, 11]) //PREGUNTAS DE TIPO UNA SOLO FILA
 const _default = ref([1, 2, 3])
-const _defaultLogic = ref([1, 2])
-const defaultScore = ref([1, 2, 3])
+const _defaultLogic = ref([1, 2]) //PREGUNTAS QUE SOLO TIENE LA OPCION DE AGREGAR LOGICAS
 
 const placeholder = ref('Texto de la pregunta')
 
@@ -56,21 +53,11 @@ const readonlyInput = ref(false)
 
 const requiredQuestions = ref(false)
 
-const myFocusInitial = ref(null)
 
-const isShowOptions = ref(true)
+const myFocusInitial = ref(null);
 
 const LISTQUESTIONBRANCH = ref([])
 
-const openModal = ref(false)
-
-const closeModal = ( (value) => {
-    openModal.value = false
-
-    if(value == 'jump') resetLogicJumpQuestion()
-})
-
-const typeLogic = ref()
 const props = defineProps({
 
     index: {
@@ -106,13 +93,16 @@ onMounted(() => {
     if (oneDefault.value.includes(props.typeQuestion)) {
 
         const questionTypeValues = {
-            4: 'Texto',
-            5: 'Email',
+            4:  'Texto',
+            5:  'Email',
+            11: 'Fecha',
             default: ''
         };
 
         options.value.push(questionTypeValues[props.typeQuestion] || questionTypeValues.default);
-        readonlyInput.value = props.typeQuestion === 4 || props.typeQuestion === 5;
+
+        //PREGUNTAS DE TIPO SOLO TEXTO
+        readonlyInput.value = props.typeQuestion === 4 || props.typeQuestion === 5 || props.typeQuestion === 11;
     }
 
     // CAMBIO EL TEXTO DEL INPUT PARA TIPO DE PREGUNTA SECCION
@@ -160,7 +150,7 @@ async function addQuestion(indexQuestion) {
             ////Actualiza la ultima modificacion que exista en la encuesta//////
             await updateSurveyAudit(props?.idSurvey, userName.toUpperCase(), token, ObtenerFecha())
 
-            if ([4, 5].includes(typeQuestion)) {
+            if ([4, 5, 11].includes(typeQuestion)) { //PREGUNTAS TIPO TEXTO DE UNA SOLA FILA
 
                 singleRowText();
             }
@@ -365,17 +355,6 @@ async function requiredQuestion() {
 
 async function addJumpLogic() {
 
-       openModal.value = true
-       typeLogic.value = 'jump'
-
-       let toastLoading = ''
-        toastLoading = toast.loading("Guardando, Favor espere...", {
-            position: toast.POSITION.BOTTOM_CENTER,
-            transition: toast.TRANSITIONS.SLIDE,
-            theme: 'dark',
-        });
-
-
     try {
         let bd_service_question = []
 
@@ -389,7 +368,6 @@ async function addJumpLogic() {
 
         addLogicJumpQuestion.value = idQuestion.value
         addLogicIdJumpQuestion.value = bd_service_question.value[0].Id
-        toast.remove(toastLoading)
     } catch (error) {
         console.error(error)
     }
@@ -398,12 +376,13 @@ async function addJumpLogic() {
 
 function addLogic() {
 
-    openModal.value = true
-    typeLogic.value = 'score'
-   // addLogicQuestion.value = idQuestion.value
+    addLogicQuestion.value = idQuestion.value
 }
 
+function resetLogicQuestion() {
 
+    addLogicQuestion.value = null
+}
 
 
 async function resetLogicJumpQuestion() {
@@ -451,67 +430,10 @@ function QuestionBranch(value) {
 const myFocusInput = () => {
     myFocusInitial.value.focus();
 };
-
-
-async function showOptions(id) {
-    
-    let toastLoading = ''
-    toastLoading = toast.loading("Guardando, Favor espere...", {
-        position: toast.POSITION.BOTTOM_CENTER,
-        transition: toast.TRANSITIONS.SLIDE,
-        theme: 'dark',
-    });
-
-    try {
-
-    const showAllOptions = !isShowOptions.value
-
-    const where = {
-    IdQuestion: id,
-    IdEncuesta: props?.idSurvey
-    }
-
-    const data = {
-    ShowAllOptions: showAllOptions,
-    UsrAct: userName.toUpperCase(),
-    FecAct: ObtenerFecha()
-    }
-
-  
-    await service_question.update({ data: data, params: where, token: token })
-    await updateSurveyAudit(props?.idSurvey,userName.toUpperCase(), token , ObtenerFecha())
-
-    toast.info("Se ha actualizado la pregunta", {
-                position: toast.POSITION.BOTTOM_RIGHT,
-                transition: toast.TRANSITIONS.SLIDE,
-                autoClose: 2000,
-                theme: 'dark',
-            });
-    isShowOptions.value = !isShowOptions.value
-    toast.remove(toastLoading)
-    } catch (error) {
-        console.error(error)
-    }
-
-}
-
-
 </script>
 
 
 <template>
-
-    <Modal v-if="idQuestion"
-    :key=props.index 
-    :index=props.index 
-    :idQuestion= idQuestion 
-    :idSurvey=props.idSurvey
-    :typeLogic=typeLogic
-    :id=addLogicIdJumpQuestion 
-    :openModal=openModal
-    @addQuestionsBranch=QuestionBranch
-    @closeModal="closeModal"
-    />
 
     <div class="card div-question mt-2" :class="props.typeQuestion === 8 ? 'fondo-encabezado' : null">
         <div class="d-grid gap-2 d-md-flex justify-content-md-end">
@@ -545,7 +467,8 @@ async function showOptions(id) {
                                 <!-- BUTTON QUE PERMITE COLOCAR PUNTUACIONES  --->
                                 <li v-if="idQuestion && _default.includes(props.typeQuestion)">
                                     <!-- BUTTON DE PUNTUACIONES -->
-                                    <a class="dropdown-item cursorHtml"
+                                    <a class="dropdown-item cursorHtml" data-bs-toggle="modal"
+                                        :data-bs-target="'#ModalLogicQuestion' + props.indexQuestion"
                                         @click="addLogic()">
                                         <i class="fa-solid fa-star" style="color: #FFD43B;"></i>
                                         Asignar
@@ -553,33 +476,13 @@ async function showOptions(id) {
                                 </li>
                                 <!-- BUTTON QUE PERMITE COLOCAR LOGICAS  --->
                                 <li v-if="idQuestion && _defaultLogic.includes(props.typeQuestion)">
-                                    <a class="dropdown-item cursorHtml"
+                                    <a class="dropdown-item cursorHtml" data-bs-toggle="modal"
+                                        :data-bs-target="'#ModalLogicQuestionJump' + props.indexQuestion"
                                         @click="addJumpLogic()">
                                         <i class="fa-solid fa-right-to-bracket" style="color: #0b59f4;"></i>
                                         Lógica de salto
                                     </a>
                                 </li>
-
-                                 <!-- BUTTON QUE GUARDA EN BIBLIOTECA -->
-                                 <!-- <li v-if="defaultScore.includes(props.typeQuestion)">
-                                  
-                                  <a class="dropdown-item cursorHtml"
-                                      @click="addLibrary(item.IdQuestion, item.InLibrary)">
-                                      <i class="fa-regular fa-bookmark" style="color: #5637c8;"></i>
-                                      {{  !item.InLibrary ? 'Guardar en biblioteca' : 'Eliminar de biblioteca' }}</a>
-                                </li> -->
-
-
-                              <li v-if="idQuestion && defaultScore.includes(props.typeQuestion)">
-                                  <!-- BUTTON QUE DEFINE EL SHOW DE OPCIONES  --->
-                                  <a class="dropdown-item cursorHtml" @click="showOptions(idQuestion)">
-                                    <i v-if="isShowOptions" class="fa-solid fa-ellipsis" style="color: #ff0000;"></i>
-                                        <i v-else class="fa-solid fa-list-ul" style="color: #37ff00;"></i>
-                                        {{isShowOptions ? 'Mostrar solo la respuesta' : 'Mostrar todas las opciones' }}
-                                  </a>
-                              </li>
-
-
                             </ul>
                         </li>
                     </ul>
@@ -589,7 +492,7 @@ async function showOptions(id) {
         </div>
 
 
-  
+
         <div class="card-body">
 
 
@@ -655,9 +558,9 @@ async function showOptions(id) {
         </div>
     </div>
 
-  
+
     <!-- Modal Logica Question Scores  -->
-    <!-- <div class="modal fade modal-xl" :id="'ModalLogicQuestion' + props.indexQuestion" data-bs-backdrop="static"
+    <div class="modal fade modal-xl" :id="'ModalLogicQuestion' + props.indexQuestion" data-bs-backdrop="static"
         data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -666,13 +569,11 @@ async function showOptions(id) {
                     <button type="button" @click="resetLogicQuestion" class="btn-close" data-bs-dismiss="modal"
                         aria-label="Close"></button>
                 </div>
-                {{ addLogicQuestion }}
                 <div v-if="addLogicQuestion" class="modal-body">
-                    <LogicQuestion 
-                    :key=props.index 
-                    :idQuestion=addLogicQuestion 
-                    :idSurvey=props.idSurvey
-                    :typeLogic="'score'" />
+
+                    <!-- aqui componente donde carga las respuesta de la pregunta -->
+                    <LogicQuestion :key=props.index :idQuestion=addLogicQuestion :idSurvey=props.idSurvey
+                        :typeLogic="'score'" />
 
 
                 </div>
@@ -682,10 +583,10 @@ async function showOptions(id) {
                 </div>
             </div>
         </div>
-    </div> -->
+    </div>
 
     <!-- Modal Logica Question Jump  -->
-    <!-- <div class="modal fade modal-xl" :id="'ModalLogicQuestionJump' + props.indexQuestion" data-bs-backdrop="static"
+    <div class="modal fade modal-xl" :id="'ModalLogicQuestionJump' + props.indexQuestion" data-bs-backdrop="static"
         data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -696,14 +597,9 @@ async function showOptions(id) {
                 </div>
                 <div v-if="addLogicJumpQuestion" class="modal-body">
 
-                   
-                    <LogicQuestion 
-                    :key=props.index 
-                    :idQuestion=addLogicJumpQuestion 
-                    :idSurvey=props.idSurvey
-                    :typeLogic="'jump'" 
-                    :id=addLogicIdJumpQuestion 
-                    @addQuestionsBranch=QuestionBranch />
+                    <!-- aqui componente donde carga las respuesta de la pregunta -->
+                    <LogicQuestion :key=props.index :idQuestion=addLogicJumpQuestion :idSurvey=props.idSurvey
+                        :typeLogic="'jump'" :id=addLogicIdJumpQuestion @addQuestionsBranch=QuestionBranch />
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" @click="resetLogicJumpQuestion"
@@ -711,8 +607,8 @@ async function showOptions(id) {
                 </div>
             </div>
         </div>
-    </div> -->
-   
+    </div>
+
 </template>
 
 

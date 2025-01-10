@@ -1,9 +1,9 @@
 import { ref } from 'vue'
 import axios from 'axios';
-import FormatearFecha from '../composables/FormatearFecha'
-import Entorno from '../composables/entorno'
-import  ErrorConnectios from '../composables/errorsConnection'
-import Database from "../composables/database";
+import FormatearFecha from '../function/FormatearFecha'
+import Entorno from '../function/entorno'
+import  ErrorConnectios from '../function/errorsConnection'
+import Database from "../function/database";
 
 const DB = Database()
 const { RUTA } = Entorno();
@@ -47,7 +47,7 @@ class AuthService{
               }
             });
             const json = await response.json();
-            this.data.value =  await json?.body;
+            this.data.value = DB === "mysql" ? await json.body : await json.body["recordset"];
 
             this.data.value.forEach(item => {
                 item.FecCrea ? item.FecCrea = FormatearFecha(item.FecCrea) : null;
@@ -91,12 +91,10 @@ class AuthService{
     } 
 
     
-    async GetDataUser(id, token) {
+    async GetDataUser(id) {
         try {
-            const response = await axios.get(`${RUTA}/Auth/${id}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            })
-            this.data.value = await response.data.body;
+            const response = await axios.get(`${RUTA}/Auth/${id}`);
+            this.data.value = DB === "mysql" ? await response.data.body : await response.data.body["recordset"] ;
         } catch (error) {
             console.error(error);
         }

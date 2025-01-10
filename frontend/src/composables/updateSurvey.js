@@ -9,7 +9,7 @@ export default async function update(idEncuesta, username, token, date) {
       FecAct: date,
     };
 
-    await service_encuesta.update({ data: data, token: token }); // actualizo encuestas
+    await service_encuesta.Update({ data: data, token: token }); // actualizo encuestas
   } catch (error) {
     console.error(error);
   }

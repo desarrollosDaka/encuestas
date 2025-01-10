@@ -1,8 +1,8 @@
 import { ref } from "vue";
 import axios from "axios";
-import Entorno from "../composables/entorno";
-import ErrorConnectios from "../composables/errorsConnection";
-import Database from "../composables/database";
+import Entorno from "../function/entorno";
+import ErrorConnectios from "../function/errorsConnection";
+import Database from "../function/database";
 
 const DB = Database()
 const { RUTA } = Entorno();
@@ -35,7 +35,7 @@ class Service {
 
       }
        /// this.data.value = await response.data.body["recordset"];
-       this.data.value =  await response.data.body;
+       this.data.value = DB === "mysql" ? await response.data.body : await response.data.body["recordset"] ;
     } catch (error) {
         console.error(error);
     }

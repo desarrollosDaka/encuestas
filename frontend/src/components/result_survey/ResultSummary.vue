@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import ServiceResponse from '../../services/Response'
-import obtenerCookiesUsuario from '../../composables/cookies'
+import obtenerCookiesUsuario from '../../function/cookies'
 import ServiceQuestion from '../../services/takeSurvey/Questions'
 import Loader from '../../components/Loader.vue'
 
@@ -164,7 +164,7 @@ function finalSummary() {
 <template>
 
 
-  <div class="results-summary-container">
+  <div class="results-summary-container mt-5">
     <div class="confetti">
       <div class="confetti-piece"></div>
       <div class="confetti-piece"></div>

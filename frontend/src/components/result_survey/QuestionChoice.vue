@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue';
-import obtenerCookiesUsuario from '../../composables/cookies'
+import obtenerCookiesUsuario from '../../function/cookies'
 import ServiceQuestion from '../../services/takeSurvey/Questions'
 import ServiceAnswerOptions from '../../services/takeSurvey/AnswerOptions'
 import LoadAnswerOptions from './LoadAnswerOptions.vue'
@@ -8,6 +8,8 @@ import ServiceSurvey from '../../services/takeSurvey/Survey'
 import CorrectAnswer from './CorrectAnswer.vue'
 import ResultSummary from './ResultSummary.vue'
 import Loader from '../../components/Loader.vue'
+import { generatePdfFromArray, generatePdf } from '@/composables/generatePdf';
+import buttonGeneratePdf from './buttonGeneratePdf.vue';
 
 const requiredQuestions = ref([])
 
@@ -18,6 +20,8 @@ const ArrayCorrectQuestion = ref([])
 const default_question_selection = ref([1, 2, 3]) // preguntas tipo seleccion
 
 let loader = ref(false)
+
+let question = ref([])
 
 const service_question = new ServiceQuestion()
 const bd_service_question = service_question.getFuentesData()
@@ -55,6 +59,13 @@ onMounted(async () => {
         }
         loader.value = true
         await service_question.unique({ params: where })
+
+        question.value = [...bd_service_question.value]
+
+        // ORDENO DE FORMA ASCENDENTE A TRAVES DEL ORDERBY 
+        question.value.sort((a, b) => a.OrderBy - b.OrderBy);
+
+
         await getShowResultsEnd()
         requiredQuestions.value = bd_service_question.value[0]?.Required
         loader.value = false
@@ -64,23 +75,23 @@ onMounted(async () => {
 })
 
 
-async function getShowResultsEnd(){
+async function getShowResultsEnd() {
 
     try {
         const where = {
-        Id: props?.idSurvey
+            Id: props?.idSurvey
         }
 
-    await service_survey.unique({ params: where }) // obtengo los datos de la encuesta
+        await service_survey.unique({ params: where }) // obtengo los datos de la encuesta
 
-    if (bdsurvey.value.length > 0) {
-        showResultsEnd.value = bdsurvey.value[0].ShowResultsEnd
-    }
+        if (bdsurvey.value.length > 0) {
+            showResultsEnd.value = bdsurvey.value[0].ShowResultsEnd
+        }
 
     } catch (error) {
         console.error(error)
     }
-   
+
 }
 
 function validQuestion(value) {
@@ -124,83 +135,88 @@ function totalScoreResponse(index) {
     return total
 }
 
+function generatePdfHtml() {
+
+    generatePdfFromArray(question.value, props?.idUserResponse,'PageQuestion');
+    generatePdf('PagePdf')
+}
 </script>
 
 
 <template>
 
-    <ResultSummary :idSurvey=props.idSurvey :idUserResponse=props.idUserResponse />
-    <div v-if="loader">
-        <Loader />
+    <div class="mb-3 position-absolute top-1 start-50 translate-middle">
+        <buttonGeneratePdf @generatePdfHtml="generatePdfHtml" />
     </div>
-    <div v-for="item, idx in bd_service_question" :key="idx" class="card mt-3">
 
-        <div v-if="item.IdTipreg != 8">
-            <div v-if="default_question_selection.includes(item.IdTipreg) && item.TypeEvaluation && showResultsEnd"
-                class="d-grid gap-2 d-md-flex justify-content-md-end p-2">
 
-                <span>{{ totalScoreResponse(idx) }}/{{ totalScore(idx) }}</span>
-            </div>
+    <div id="PagePdf">
+        <div id="PageQuestion">
+            <ResultSummary :idSurvey=props.idSurvey :idUserResponse=props.idUserResponse />
+        </div>
+        <div v-if="loader">
+            <Loader />
+        </div>
 
-            <div class="card-body">
+        <div v-for="item, idx in question" :key="idx" class="card mt-3">
 
-                <div class="position-relative">
+            <div v-if="item.IdTipreg != 8">
+                <div v-if="default_question_selection.includes(item.IdTipreg) && item.TypeEvaluation && showResultsEnd"
+                    class="d-grid gap-2 d-md-flex justify-content-md-end p-2">
 
-                    <div class="row g3">
+                    <span>{{ totalScoreResponse(idx) }}/{{ totalScore(idx) }}</span>
+                </div>
 
-                        <div v-if="isCorrectQuestion(idx) && default_question_selection.includes(item.IdTipreg) && item.TypeEvaluation && showResultsEnd"
-                            showResultsEndclass="col-auto"> <i class="fa-solid fa-check iconColorGreen"> </i> </div>
+                <div class="card-body">
 
-                        <div v-if="!isCorrectQuestion(idx) && default_question_selection.includes(item.IdTipreg) && item.TypeEvaluation && showResultsEnd"
-                            class="col-auto"> <i class="fa-solid fa-xmark iconColorRed"> </i> </div>
+                    <div class="position-relative">
 
-                        <div class="col-auto">
-                            <span :class="getSpanClass(isCorrectQuestion(idx), item)" class="textoQuestion">
-                                {{ item.TextoPregunta }}
-                                <span v-if="item.Required" class="asterisk">*</span>
-                            </span>
+                        <div class="row g3">
+
+                            <div v-if="isCorrectQuestion(idx) && default_question_selection.includes(item.IdTipreg) && item.TypeEvaluation && showResultsEnd"
+                                showResultsEndclass="col-auto"> <i class="fa-solid fa-check iconColorGreen"> </i> </div>
+
+                            <div v-if="!isCorrectQuestion(idx) && default_question_selection.includes(item.IdTipreg) && item.TypeEvaluation && showResultsEnd"
+                                class="col-auto"> <i class="fa-solid fa-xmark iconColorRed"> </i> </div>
+
+                            <div class="col-auto">
+                                <span :class="getSpanClass(isCorrectQuestion(idx), item)" class="textoQuestion">
+                                    {{ item.TextoPregunta }}
+                                    <span v-if="item.Required" class="asterisk">*</span>
+                                </span>
+                            </div>
+
                         </div>
 
                     </div>
 
+                    <!-- CARGA LAS OPCIONES DE LA PREGUNTA -->
+                    <LoadAnswerOptions :index=idx :idSurvey=props?.idSurvey :idQuestion=item.IdQuestion
+                        :idTipreg=item.IdTipreg :idUserResponse=props.idUserResponse :tipeEvaluation=item.TypeEvaluation
+                        @isCorrectQuestion="validQuestion" :showAllOptions=Boolean(item.ShowAllOptions)
+                        :showResultsEnd=Boolean(showResultsEnd) />
+
                 </div>
 
-                <!-- CARGA LAS OPCIONES DE LA PREGUNTA -->
-                <LoadAnswerOptions 
-                :index=idx 
-                :idSurvey=props?.idSurvey 
-                :idQuestion=item.IdQuestion
-                :idTipreg=item.IdTipreg 
-                :idUserResponse=props.idUserResponse 
-                :tipeEvaluation=item.TypeEvaluation
-                @isCorrectQuestion="validQuestion" 
-                :showAllOptions=Boolean(item.ShowAllOptions) 
-                :showResultsEnd = Boolean(showResultsEnd)
-                />
+
+                <!-- AQUI VALIDO QUE MUESTRE LA OPCION CORRECTA EN CASO DE FALLAR LA RESPUESTA -->
+                <div
+                    v-if="!isCorrectQuestion(idx) && default_question_selection.includes(item.IdTipreg) && item.TypeEvaluation && showResultsEnd">
+                    <CorrectAnswer :idQuestion=item.IdQuestion :idTipreg=item.IdTipreg :idSurvey=props?.idSurvey />
+                </div>
 
             </div>
 
 
-            <!-- AQUI VALIDO QUE MUESTRE LA OPCION CORRECTA EN CASO DE FALLAR LA RESPUESTA -->
-            <div
-                v-if="!isCorrectQuestion(idx) && default_question_selection.includes(item.IdTipreg) && item.TypeEvaluation && showResultsEnd">
-                <CorrectAnswer :idQuestion=item.IdQuestion :idTipreg=item.IdTipreg :idSurvey=props?.idSurvey />
-            </div>
 
-        </div>
-
-
-        <div v-else class="text-white">
-            <div class="card-header bg-primary">Atención</div>
-            <div class="card-body">
-                <span class="text-header">{{ item.TextoPregunta }}</span>
+            <div v-else class="text-white">
+                <div class="card-header bg-primary">Atención</div>
+                <div class="card-body">
+                    <span class="text-header">{{ item.TextoPregunta }}</span>
+                </div>
             </div>
         </div>
-
     </div>
-
-
-
 
 </template>
 

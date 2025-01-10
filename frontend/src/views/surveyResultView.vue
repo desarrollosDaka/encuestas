@@ -2,7 +2,7 @@
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router'
 import QuestionChoice from '../components/result_survey/QuestionChoice.vue'
-import obtenerCookiesUsuario from '../composables/cookies'
+import obtenerCookiesUsuario from '../function/cookies'
 
 const objUser = obtenerCookiesUsuario().objUser
 const userName = obtenerCookiesUsuario().userName

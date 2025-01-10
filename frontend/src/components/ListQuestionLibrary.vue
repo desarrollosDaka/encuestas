@@ -2,7 +2,7 @@
 import { ref, onMounted } from 'vue';
 import ServiceLibraryQuestions from '../services/LibraryQuestions'
 import ServiceLibraryAnswers from '../services/LibraryAnswers'
-import obtenerCookiesUsuario from '../composables/cookies'
+import obtenerCookiesUsuario from '../function/cookies'
 import ServiceQuestion from '../services/Questions'
 import generateUuid from 'generate-uuid';
 import ServiceAnswerOptions from '../services/AnswerOptions'
@@ -58,12 +58,12 @@ onMounted(async () => {
 
 async function addQuestion(item) {
 
-    const idQuestion = generateUuid()
+    const IdQuestion = generateUuid()
     let toastLoading = ''
 
     const data = {
         IdEncuesta: props?.idSurvey,
-        IdQuestion: idQuestion,
+        IdQuestion: IdQuestion,
         TextoPregunta: item.TextoPregunta,
         IdTipreg: item.IdTipreg,
         IdQuestionInLibrary: item.IdQuestion,
@@ -94,7 +94,7 @@ async function addQuestion(item) {
 
             const dataAnswer = {
                 IdEncuesta: props?.idSurvey,
-                IdQuestion: idQuestion,
+                IdQuestion: IdQuestion,
                 TextoRespuesta: element.TextoRespuesta,
                 UsrCrea: userName.toUpperCase(),
                 IndexTarget: element.IndexTarget
@@ -124,7 +124,7 @@ async function addQuestion(item) {
             <p class="tip"></p>
             <div class="tooltip-container">
                 <span class="tooltip">Creado por: {{ item.UsrCrea.toLowerCase() }}</span>
-                <p class="second-text">{{ item.TextoPregunta }}</p>
+                <p class="second-text" @click="addQuestion(item)">{{ item.TextoPregunta }}</p>
             </div>
         </div>
     </div>

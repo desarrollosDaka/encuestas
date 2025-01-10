@@ -1,24 +1,38 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import AuthService from '../services/AuthServices'
 import { useRouter } from 'vue-router';
-import obtenerCookiesUsuario from '../composables/cookies'
+import obtenerCookiesUsuario from '../function/cookies'
 import generateUuid from 'generate-uuid';
 import UuidService from "../services/GenerateUUID"
 import { toast } from 'vue3-toastify';
 import Swal from "sweetalert2";
 import MenuNavegacion from '../components/SideNav.vue';
 import PasswordForm from '../components/PasswordFormAuth.vue'
+import { useLocalStorage } from "@vueuse/core";
 
 const setIsAuthenticated = $cookies.get(obtenerCookiesUsuario().nameCookies)
 
 let usuario = ref('')
 let password = ref('')
 
+const remenberMe = ref(false);
+const storedUsuario = useLocalStorage('Email-Cp', '');
+const storedPassword = useLocalStorage('Password-Cp', '')
+
 const field_message_usuario = ref(true);
 const field_message_password = ref(true);
 
 const router = useRouter()
+
+onMounted(() => {
+
+if (storedUsuario.value) {
+  usuario.value = storedUsuario.value;
+  remenberMe.value = true;
+}
+
+})
 
 
 function navigateToRoute() {
@@ -56,6 +70,17 @@ const errorFields = () => {
 
 
 
+function useLocalStorageAuthentication() {
+
+if (remenberMe.value) {
+  storedUsuario.value = usuario.value;
+  storedPassword.value = password.value;
+} else {
+  storedUsuario.value = '';
+  storedPassword.value = '';
+}
+}
+
 
 const handleLogin = async (event) => {
 
@@ -73,6 +98,8 @@ const handleLogin = async (event) => {
 
   if (success) {
     
+   useLocalStorageAuthentication()
+
     Swal.fire({
       timer: 1500,
       showConfirmButton: false,
@@ -91,7 +118,7 @@ const handleLogin = async (event) => {
           Active: 1
         }
 
-        await Auth.GetDataUser(usuario.value, Token.value)
+        await Auth.GetDataUser(usuario.value)
         const bd_user = Auth.getFuentesData()
 
         
@@ -103,7 +130,7 @@ const handleLogin = async (event) => {
         $cookies.set(obtenerCookiesUsuario().nameCookies, { user: usuario.value, token: Token.value, uuid: uuid, company:company, department: department, rol:rol })
 
         //Aqui Guardamos el idSessions en el Backend
-        Uuid_Service.UuidPost(data, Token.value)
+        Uuid_Service.UuidPost(data)
 
 
         const notify = () => {
@@ -215,11 +242,19 @@ const ENTORNO = ref(process.env.NODE_ENV)
 
                       </div>
 
+                      <div class="form-outline mb-4">
+                      <label>
+                        <input type="checkbox" class="input" v-model="remenberMe">
+                        <span class="custom-checkbox"></span>
+                        Recordar Contraseña
+                      </label>
+                    </div>
+
                       <div class="pt-1 mb-4">
                         <button class="btn btn-dark btn-lg btn-block" type="submit">Sign In</button>
                       </div>
                     </form>
-                    <p class="fw-light fw-bold text-sm text-center">Version:1.0.0</p>
+                    <p class="fw-light fw-bold text-sm text-center">Version:1.3.8</p>
                     <!-- </div> -->
                   </div>
                   
@@ -237,6 +272,42 @@ const ENTORNO = ref(process.env.NODE_ENV)
 </template>
 
 <style scoped>
+
+.input[type="checkbox"] {
+  display: none;
+}
+
+
+/* Style for the custom checkbox */
+.custom-checkbox {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 2px solid #333;
+  border-radius: 4px;
+  position: relative;
+  cursor: pointer;
+}
+
+/* Style for the custom checkmark */
+.custom-checkbox::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 10px;
+  height: 10px;
+  background-color: #333;
+  border-radius: 2px;
+  opacity: 0;
+}
+
+/* Show the checkmark when checkbox is checked */
+.input[type="checkbox"]:checked+.custom-checkbox::after {
+  opacity: 1;
+}
+
 .containerpage {
 
   background-color: #34343A;

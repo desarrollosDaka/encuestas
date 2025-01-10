@@ -1,6 +1,6 @@
 <script setup>
 import { computed, defineProps, ref, onMounted } from 'vue';
-import obtenerCookiesUsuario from '@/composables/cookies'
+import obtenerCookiesUsuario from '@/function/cookies'
 import SearchForm from './SearchForm.vue';
 import Multiselect from 'vue-multiselect'
 import AuthService from "@/services/AuthServices"

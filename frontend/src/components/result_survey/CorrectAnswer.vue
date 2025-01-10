@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import ServiceAnswerOptions from '../../services/takeSurvey/AnswerOptions'
-import obtenerCookiesUsuario from '../../composables/cookies'
+import obtenerCookiesUsuario from '../../function/cookies'
 
 const default_question_selection = ref([1, 2, 3]) // preguntas tipo seleccion
 const correctAnswer = ref([])

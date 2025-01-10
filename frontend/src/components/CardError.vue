@@ -1,5 +1,7 @@
 <script setup>
+import { defineProps, defineEmits, onMounted } from 'vue';
 
+const emit = defineEmits(['error'])
 const props = defineProps({
 
     tittle: {
@@ -12,7 +14,10 @@ const props = defineProps({
     }
 })
 
+onMounted(() =>{
 
+  emit('error')
+})
 
 </script>
 <template>
@@ -30,7 +35,7 @@ const props = defineProps({
       <div class="alert-prompt-wrap">
         <p class="text-sm text-yellow-700">
             {{$props?.tittle}}
-          <a class="alert-prompt-link">{{props?.msg}}</a>
+          {{props?.msg}}
         </p>
     </div>
   </div>

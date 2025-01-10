@@ -2,11 +2,11 @@
 import { ref, onMounted, watch, defineProps, computed } from 'vue';
 import ServiceQuestion from '../services/Questions'
 import ServiceAnswerOptions from '../services/AnswerOptions'
-import obtenerCookiesUsuario from '../composables/cookies'
-import ObtenerFecha from '../composables/ObtenerFecha';
+import obtenerCookiesUsuario from '../function/cookies'
+import ObtenerFecha from '../function/ObtenerFecha';
 import Multiselect from 'vue-multiselect'
 import ServiceQuestionBranches from '../services/QuestionBranches'
-import validatePropertyAndValue from '../composables/validateAndValue'
+import validatePropertyAndValue from '../function/validateAndValue'
 import { toast } from 'vue3-toastify';
 
 const objUser = obtenerCookiesUsuario().objUser
@@ -204,7 +204,7 @@ async function updateShowResult() {
 
 
         await service_question.update({ data: data, params: where, token: token })
-        
+
     } catch (error) {
         console.error(error)
     }
@@ -357,7 +357,6 @@ async function questionBranches(e) {
         });
     }
 
-    console.log('emitiendo branch')
     emits("addQuestionsBranch", selectedQuestions.value)
 
 }
@@ -368,58 +367,58 @@ async function removeQuestion(e, op) {
 
     try {
         const rowId = op.Id
-    const idQuestionJump = e.IdQuestionJump
-    const idQuestion = e.IdQuestion
+        const idQuestionJump = e.IdQuestionJump
+        const idQuestion = e.IdQuestion
 
-    if (selectedQuestions.value.hasOwnProperty(rowId)) {
+        if (selectedQuestions.value.hasOwnProperty(rowId)) {
 
-        const objectsAtIndex = selectedQuestions.value[rowId];
-        const indexToRemove = objectsAtIndex.findIndex(obj => obj.IdQuestionJump === idQuestionJump && obj.IdQuestion === idQuestion);
+            const objectsAtIndex = selectedQuestions.value[rowId];
+            const indexToRemove = objectsAtIndex.findIndex(obj => obj.IdQuestionJump === idQuestionJump && obj.IdQuestion === idQuestion);
 
-        if (indexToRemove !== -1) {
+            if (indexToRemove !== -1) {
 
-            objectsAtIndex.splice(indexToRemove, 1);
+                objectsAtIndex.splice(indexToRemove, 1);
 
-            const where = {
-                Id: e?.Id
-            }
-            if (validatePropertyAndValue(where, 'Id')) {
+                const where = {
+                    Id: e?.Id
+                }
+                if (validatePropertyAndValue(where, 'Id')) {
 
-                await service_question_branches.del({ params: where, token: token })
+                    await service_question_branches.del({ params: where, token: token })
+                } else {
+
+                    toast.error("Ocurrio un error. Actualize e intente nuevamente", {
+                        position: toast.POSITION.BOTTOM_RIGHT,
+                        transition: toast.TRANSITIONS.SLIDE,
+                        autoClose: 2000,
+                        theme: 'dark',
+                    });
+                }
+
             } else {
 
-                toast.error("Ocurrio un error. Actualize e intente nuevamente", {
+                toast.error(`No se encontró un objeto con las propiedades especificadas en el índice ${rowId}`, {
                     position: toast.POSITION.BOTTOM_RIGHT,
                     transition: toast.TRANSITIONS.SLIDE,
                     autoClose: 2000,
                     theme: 'dark',
                 });
             }
-
         } else {
 
-            toast.error(`No se encontró un objeto con las propiedades especificadas en el índice ${rowId}`, {
+            toast.error(`El índice ${rowId} no existe en el objeto array`, {
                 position: toast.POSITION.BOTTOM_RIGHT,
                 transition: toast.TRANSITIONS.SLIDE,
                 autoClose: 2000,
                 theme: 'dark',
             });
         }
-    } else {
 
-        toast.error(`El índice ${rowId} no existe en el objeto array`, {
-            position: toast.POSITION.BOTTOM_RIGHT,
-            transition: toast.TRANSITIONS.SLIDE,
-            autoClose: 2000,
-            theme: 'dark',
-        });
-    }
-    
     } catch (error) {
 
         console.error(error)
     }
-   
+
 
 
 
@@ -427,9 +426,9 @@ async function removeQuestion(e, op) {
 
 function stepDow(row) {
 
-row.Score = row.Score - 1
+    row.Score = row.Score - 1
 
-updateTextOption(row)
+    updateTextOption(row)
 
 
 
@@ -437,15 +436,14 @@ updateTextOption(row)
 
 function stepUp(row) {
 
-row.Score = row.Score + 1
+    row.Score = row.Score + 1
 
-updateTextOption(row)
+    updateTextOption(row)
 
 }
 </script>
 
 <template>
-
 
     <div v-if="bd_service_question.length <= 0" class="alert alert-warning" role="alert">
         Ocurrio un error, actualize la pagina y vuelva a intentarlo
@@ -503,7 +501,7 @@ updateTextOption(row)
                                             v-model="row.Score" class="form-control form-control-sm"
                                             style="width: 50px;">
                                         <button data-mdb-button-init data-mdb-ripple-init class="btn btn-link px-2"
-                                        @click="stepUp(row)">
+                                            @click="stepUp(row)">
                                             <i class="fas fa-plus"></i>
                                         </button>
                                     </div>

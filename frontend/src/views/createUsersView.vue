@@ -5,8 +5,8 @@ import AuthService from "../services/AuthServices"
 import ServiceCompany from "../services/Company"
 import ServiceDepartments from "../services/Departments"
 import PasswordForm from '../components/PasswordForm.vue'
-import ObtenerFecha from '../composables/ObtenerFecha';
-import obtenerCookiesUsuario from '../composables/cookies'
+import ObtenerFecha from '../function/ObtenerFecha';
+import obtenerCookiesUsuario from '../function/cookies'
 import DataTable from '../components/dataTable/DataTableUsers.vue'
 import { toast } from 'vue3-toastify'
 
@@ -15,14 +15,14 @@ const userName = obtenerCookiesUsuario().userName
 const token = obtenerCookiesUsuario().token
 
 const service = new AuthService()
-const bd = service.getFuentesData()
+const Bd = service.getFuentesData()
 const _columns = service.getFuentesColumn()
-
+ 
 const serviceCompany = new ServiceCompany()
-const bdCompany = serviceCompany.getFuentesData()
+const BdCompany = serviceCompany.getFuentesData()
 
 const serviceDepartments = new ServiceDepartments()
-const bdDepartments = serviceDepartments.getFuentesData()
+const BdDepartments = serviceDepartments.getFuentesData()
 
 const operation = ref('Registrar')
 const operationReset = ref('Limpiar')
@@ -36,7 +36,7 @@ const activo = ref('')
 const rol = ref(0)
 
 const myInput = ref(null);
-const bdEdit = ref(null)  //identifica el reg a actualizar
+const BdEdit = ref(null)  //identifica el reg a actualizar
 
 
 onMounted(async () => {
@@ -62,7 +62,7 @@ async function addData(event) {
 
 
 
-  if (!usuario.value || !nombreusuario.value || !activo.value || (!password.value && bdEdit.value == null)) {
+  if (!usuario.value || !nombreusuario.value || !activo.value || (!password.value && BdEdit.value == null)) {
 
     return toast.error('Todos los campos son requeridos', {
       transition: toast.TRANSITIONS.ZOOM,
@@ -75,7 +75,7 @@ async function addData(event) {
 
 
 
-  if (bdEdit.value == null) {
+  if (BdEdit.value == null) {
 
     const formData = {
       Nombre: nombreusuario.value,
@@ -115,7 +115,7 @@ async function addData(event) {
 
 
         const dataUsers = {
-          Id: bdEdit.value,
+          Id: BdEdit.value,
           Nombre: nombreusuario.value,
           Activo: activo.value,
           IdCompany: empresa.value,
@@ -127,7 +127,7 @@ async function addData(event) {
 
 
         const dataAuth = {
-          Id: bdEdit.value,
+          Id: BdEdit.value,
           Usuario: usuario.value,
           Password: password.value,
           UsrAct: userName,
@@ -139,7 +139,7 @@ async function addData(event) {
         //Aqui Actualizamos en el Backend
         await service.UpdateUsuario({ data: dataUsers, token: token })
         await service.UpdateAuth({ data: dataAuth, token: token })
-        bdEdit.value = null
+        BdEdit.value = null
         clearFields()
         focusInput()
         operation.value = 'Registrar'
@@ -148,7 +148,7 @@ async function addData(event) {
         Swal.fire('Actualizado!', '', 'success')
         RefreshData()
       } else if (result.isDenied) {
-        bdEdit.value = null
+        BdEdit.value = null
         operation.value = 'Registrar'
         operationReset.value = 'Limpiar'
         clearFields()
@@ -191,7 +191,7 @@ async function deleteData(id) {
 function editData(id) {
   operation.value = 'Actualizar Datos'
   operationReset.value = 'Cancelar'
-  const foundData = bd.value.filter(data => data.Id == id)
+  const foundData = Bd.value.filter(data => data.Id == id)
   usuario.value = foundData[0].Usuario
   nombreusuario.value = foundData[0].Nombre
   password.value = ''
@@ -200,7 +200,7 @@ function editData(id) {
   listDepartments()
   activo.value = foundData[0].Activo
   rol.value = foundData[0].RolAdministrator
-  bdEdit.value = id
+  BdEdit.value = id
   focusInput()
 }
 
@@ -212,7 +212,7 @@ function clearFields() {
   empresa.value = ''
   departamento.value = ''
   activo.value = ''
-  bdEdit.value = null
+  BdEdit.value = null
   operation.value = 'Registrar'
   operationReset.value = 'Limpiar'
   focusInput()
@@ -284,7 +284,7 @@ async function listDepartments() {
           <select class="form-select" id="empresa" required @change="listDepartments(empresa)"
             aria-label="Floating label select example" v-model="empresa">
             <option value='all'>Todas las Empresas</option>
-            <option v-for="company in bdCompany" :key="company.Id" :value="company.IdCompany">{{ company.NameCompany
+            <option v-for="company in BdCompany" :key="company.Id" :value="company.IdCompany">{{ company.NameCompany
               }}</option>
           </select>
           <label class="form-label" for="usuario">Empresa*</label>
@@ -294,7 +294,7 @@ async function listDepartments() {
           <select class="form-select" id="departamento" required aria-label="Floating label select example"
             v-model="departamento">
             <option value='all'>Todas los Departamentos</option>
-            <option v-for="department in bdDepartments" :key="department.Id" :value="department.IdDepartments">{{
+            <option v-for="department in BdDepartments" :key="department.Id" :value="department.IdDepartments">{{
               department.NameDepartments }}</option>
           </select>
           <label class="form-label" for="usuario">Departamento*</label>
@@ -331,7 +331,7 @@ async function listDepartments() {
 
   <div>
 
-    <DataTable v-if="bd?.length > 0" :items="bd" :columns="_columns" @sayUpdate="editData" @sayDelete="deleteData" />
+    <DataTable :items="Bd" :columns="_columns" @sayUpdate="editData" @sayDelete="deleteData" />
   </div>
 
 </template>

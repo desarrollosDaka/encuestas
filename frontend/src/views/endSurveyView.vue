@@ -2,12 +2,8 @@
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router'
 import ServiceQuestion from '../services/takeSurvey/Questions'
-import ServiceSurvey from '../services/takeSurvey/Survey'
-import obtenerCookiesUsuario from '../composables/cookies'
+import obtenerCookiesUsuario from '../function/cookies'
 import Loader from '../components/Loader.vue'
-import Entorno from '../composables/entorno'
-
-const { RUTA_LINK } = Entorno();
 
 const route = useRoute()
 const router = useRouter()
@@ -21,17 +17,12 @@ idEncuesta.value = route.params?.idEncuesta
 let hasScore = ref(false)
 let loader = ref()
 
-
-const linkSurvey = ref(RUTA_LINK)
-
 const objUser = obtenerCookiesUsuario().objUser
 const userName = obtenerCookiesUsuario().userName
 
 const service_question = new ServiceQuestion()
 const bd_service_question = service_question.getFuentesData()
 
-const service_survey = new ServiceSurvey()
-const bdsurvey = service_survey.getFuentesData()
 
 onMounted(async () => {
 
@@ -41,14 +32,8 @@ onMounted(async () => {
       IdEncuesta: idEncuesta.value
     }
 
-    const whereSurvey= {
-        Id: idEncuesta.value
-    }
-
     loader.value = true
     await service_question.unique({ params: where })
-    await service_survey.unique({ params: whereSurvey }) // obtengo los datos de la encuesta
-
     loader.value = false
     iterateDataSurvey()
 
@@ -78,11 +63,6 @@ function viewSurveyResuls() {
   router.push({ name: 'SurveyResult', params: { id: idEncuesta.value, idUser: idUserResponse.value } });
 }
 
-const start = () =>  router.push({ name:'takeSurvey', params: { id: bdsurvey.value[0]?.UrlSurvey }});
-
-
-
-
 </script>
 
 <template>
@@ -99,7 +79,6 @@ const start = () =>  router.push({ name:'takeSurvey', params: { id: bdsurvey.val
               <p style="text-align: center;font-size: 28px;font-weight: 500;line-height: 42px; color:#0a86ea">
                 Gracias por completar esta encuesta <i class="fa-solid fa-thumbs-up"></i>
               </p>
-              <button v-if="bdsurvey[0]?.StartButton" class="button-start" @click="start">Volver al inicio</button>
             </div>
           </div>
           <div>
@@ -109,6 +88,7 @@ const start = () =>  router.push({ name:'takeSurvey', params: { id: bdsurvey.val
                 PUNTUACIÓN<i class="animation"></i>
               </button>
             </div>
+
           </div>
         </div>
 
@@ -119,27 +99,6 @@ const start = () =>  router.push({ name:'takeSurvey', params: { id: bdsurvey.val
 </template>
 
 <style scoped>
-
-.button-start {
- background-color: transparent;
- border: 1px solid rgb(20, 87, 244);
- padding: 6px 12px;
- border-radius: 7px;
- transition: .3s;
- color: rgb(20, 87, 244);
-}
-
-.button-start:hover {
- border: 1px solid rgb(20, 87, 244);
- background-color: #0A86EA;
- color: #fff
-}
-
-.button-start:focus {
- box-shadow: 0px 0px 0px 5px rgba(20, 87, 244, 0.37), 0px 0px 0px 10px rgba(20, 87, 244, 0.38);
- outline: none;
-}
-
 .btn-result {
   outline: 0;
   display: inline-flex;

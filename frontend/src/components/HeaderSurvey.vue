@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import ServiceSurvey from '../services/takeSurvey/Survey'
-import obtenerCookiesUsuario from '../composables/cookies'
+import obtenerCookiesUsuario from '../function/cookies'
 import Loader from '../components/Loader.vue'
 
 const objUser = obtenerCookiesUsuario().objUser

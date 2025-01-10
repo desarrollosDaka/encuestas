@@ -1,10 +1,10 @@
 import { ref } from 'vue'
 import axios from 'axios';
-import Entorno from '../composables/entorno'
-import FormatearFecha from '../composables/FormatearFecha'
-import  ErrorConnectios from '../composables/errorsConnection'
+import Entorno from '../function/entorno'
+import FormatearFecha from '../function/FormatearFecha'
+import  ErrorConnectios from '../function/errorsConnection'
 import { toast } from 'vue3-toastify';
-import Database from "../composables/database";
+import Database from "../function/database";
 
 const DB = Database()
 const { RUTA } = Entorno();
@@ -76,11 +76,10 @@ class Service{
                   'Authorization': `Bearer ${token}`, // notice the Bearer before your token
               }
             });
-
             const json = await response.json();
-            this.data.value =  await json?.body;
+            this.data.value = DB === "mysql" ? await json.body : await json.body["recordset"];
 
-            this.data?.value.forEach(item => {
+            this.data.value.forEach(item => {
                 item.FecCrea ? item.FecCrea = FormatearFecha(item.FecCrea) : null;
                 item.FecAct ? item.FecAct = FormatearFecha(item.FecAct) : null;
               });
@@ -95,7 +94,7 @@ class Service{
             });
           } catch (error) {
             
-             toast.error('No se pudieron mostrar los datos', {
+             toast.error('Ocurrio un error. No se pudieron mostrar los datos', {
                   position: toast.POSITION.BOTTOM_LEFT,
                 transition: toast.TRANSITIONS.SLIDE,
                 autoClose: 2000,

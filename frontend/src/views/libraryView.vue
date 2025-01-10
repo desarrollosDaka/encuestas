@@ -2,12 +2,12 @@
 import { onMounted, ref, computed, defineAsyncComponent } from "vue"
 import { useRoute, useRouter } from 'vue-router'
 //import DataTable from '../components/dataTable/DataTableLibrary.vue'
-import obtenerCookiesUsuario from '../composables/cookies'
+import obtenerCookiesUsuario from '../function/cookies'
 import ServiceQuestion from '../services/Questions'
 import ServiceAnswerOptions from '../services/AnswerOptions'
 import ServiceLibraryQuestions from '../services/LibraryQuestions'
 import ServiceLibraryAnswers from '../services/LibraryAnswers'
-import ObtenerFecha from '../composables/ObtenerFecha';
+import ObtenerFecha from '../function/ObtenerFecha';
 import { toast } from 'vue3-toastify';
 import verifySurveyQuestionAnswer from '@/composables/verifySurveyQuestionAnswer';
 import notify from '@/composables/notify';
@@ -36,7 +36,7 @@ const token = obtenerCookiesUsuario().token
 const department = obtenerCookiesUsuario().department
 
 const service = new ServiceLibraryQuestions()
-const bd = service.getFuentesData()
+const Bd = service.getFuentesData()
 
 const _columns = service.getFuentesColumn()
 
@@ -85,7 +85,7 @@ async function editData(id) {
         IdQuestion: id
     }
 
-    bd_question.value = [...bd.value.filter(data => data.IdQuestion === id)]
+    bd_question.value = [...Bd.value.filter(data => data.IdQuestion === id)]
 
     // BUSCO LAS OPCIONES DE ESA PREGUNTA
     await service_library_answer.unique({ params: where, token: token })
@@ -181,7 +181,7 @@ async function updateQuestion(e) {
         UsrAct: userName.toUpperCase(),
         FecAct: ObtenerFecha()
     }
- 
+
     await service_library_question.update({ data: data, params: where, token: token })
     } catch (error) {
         console.error(error)
@@ -197,9 +197,8 @@ async function addTextOption(e, i) {
         
     let toastLoading = ''
 
-if (!answerOptionInsert?.value.includes(e.IndexTarget)) { //actualiza
+if (!answerOptionInsert?.value.includes(e.IndexTarget)) {
 
-   
     toastLoading = toast.loading("Guardando, Favor espere...", {
         position: toast.POSITION.BOTTOM_CENTER,
         transition: toast.TRANSITIONS.SLIDE,
@@ -221,34 +220,30 @@ if (!answerOptionInsert?.value.includes(e.IndexTarget)) { //actualiza
 
     const _isQuestion = await isQuestion(i.IdQuestion)
 
-    // Comentado para evitar problemas de manejabilidad: una pregunta de la librería no puede modificar otra que la esté utilizando.
+    if (_isQuestion.value.length > 0) {
 
-    // if (_isQuestion.value.length > 0) {
+        for (const element of _isQuestion.value) {
 
-    //     for (const element of _isQuestion.value) {
+            const whereAnswer = {
+                IdQuestion: element.IdQuestion,
+                IndexTarget: e.IndexTarget
+            }
 
-    //         const whereAnswer = {
-    //             IdQuestion: element.IdQuestion,
-    //             IdEncuesta: element.IdEncuesta,
-    //             IndexTarget: e.IndexTarget
-    //         }
+            const dataAnswer = {
+                TextoRespuesta: e.TextoRespuesta,
+                UsrAct: userName.toUpperCase(),
+                FecAct: ObtenerFecha()
+            }
 
-    //         const dataAnswer = {
-    //             TextoRespuesta: e.TextoRespuesta,
-    //             UsrAct: userName.toUpperCase(),
-    //             FecAct: ObtenerFecha()
-    //         }
-    //         await service_answer.update({ data: dataAnswer, params: whereAnswer, token: token })
+            await service_answer.update({ data: dataAnswer, params: whereAnswer, token: token })
 
-    //     }
+        }
 
-   
-    // }
+        toast.remove(toastLoading)
+        window.location.reload()
+    }
 
-          toast.remove(toastLoading)
-         // window.location.reload()
-
-} else {//inserta
+} else {
 
     toastLoading = toast.loading("Guardando, Favor espere...", {
         position: toast.POSITION.BOTTOM_CENTER,
@@ -271,39 +266,30 @@ if (!answerOptionInsert?.value.includes(e.IndexTarget)) { //actualiza
     // primero verifico que existan registros o preguntas con IdQuestion
 
     const _isQuestion = await isQuestion(i.IdQuestion)
-    
-     // Comentado para evitar problemas de manejabilidad: una pregunta de la librería no puede modificar otra que la esté utilizando.
 
-    // if (_isQuestion.value.length > 0) {
+    if (_isQuestion.value.length > 0) {
 
-    //     for (const element of _isQuestion.value) {
-    //         const data = {
-    //             IdEncuesta: element.IdEncuesta,
-    //             IdQuestion: element.IdQuestion,
-    //             TextoRespuesta: e.TextoRespuesta,
-    //             UsrCrea: userName.toUpperCase(),
-    //             IndexTarget: e.IndexTarget
+        for (const element of _isQuestion.value) {
+            const data = {
+                IdEncuesta: element.IdEncuesta,
+                IdQuestion: element.IdQuestion,
+                TextoRespuesta: e.TextoRespuesta,
+                UsrCrea: userName.toUpperCase(),
+                IndexTarget: e.IndexTarget
 
-    //         }
+            }
 
-    //         await service_answer.add({ data: data, token: token }) // TABLA ANSWER
+            await service_answer.add({ data: data, token: token }) // TABLA ANSWER
 
-    //     };
+        };
 
-        
-    // }
+        toast.remove(toastLoading)
+    }
 
     // SI SE AGREGO HAY QUE ELIMINARLO DE LA LISTA PARA YA NO ESTE EN MODO INSERT
     answerOptionInsert.value = answerOptionInsert.value.filter(item => item !== e.IndexTarget)
-    toast.remove(toastLoading)
-    //window.location.reload()
-    
-    toast.success("Registro actualizado", {
-            position: toast.POSITION.BOTTOM_RIGHT,
-              transition: toast.TRANSITIONS.SLIDE,
-              autoClose: 2000,
-              theme: 'dark',
-          });
+    window.location.reload()
+
 }
     } catch (error) {
         console.error(error)
@@ -368,28 +354,25 @@ async function del(item) {
 
     const _isQuestion = await isQuestion(item.IdQuestion)
 
-    // Comentado para evitar problemas de manejabilidad: una pregunta de la librería no puede modificar otra que la esté utilizando.
+    if (_isQuestion.value.length > 0) {
 
-    // if (_isQuestion.value.length > 0) {
-
-    //     for (const element of _isQuestion.value) {
+        for (const element of _isQuestion.value) {
 
 
-    //         const where = {
-    //             IndexTarget: item.IndexTarget,
-    //             IdQuestion: element.IdQuestion
-    //         }
+            const where = {
+                IndexTarget: item.IndexTarget,
+                IdQuestion: element.IdQuestion
+            }
 
 
-    //         error_answer = await service_answer.del({ params: where, token: token })
+            error_answer = await service_answer.del({ params: where, token: token })
 
 
-    //     }
+        }
 
-    // }
-
+    }
     !error_library.response?.data.errors["error"] ? toast.clearAll() : null
-    //window.location.reload()
+    window.location.reload()
    } catch (error) {
         console.error(error)
    }
@@ -438,8 +421,8 @@ async function isQuestion(id) {
 
     <div>
         <Suspense>
-            <DataTable v-if="bd?.length > 0" 
-            :items="bd" 
+            <DataTable 
+            :items="Bd" 
             :columns="_columns" 
             @sayUpdate="editData" 
             @sayDelete="deleteData"

@@ -6,7 +6,7 @@ const notShow = showAgain?.show
 
 const emit = defineEmits(['itemSelectOne', 'isActivePanel'])
 
-const addGroup = (url, typequestion) => emit("itemSelectOne", url, typequestion,true)
+const addGroup = (url, typequestion) => emit("itemSelectOne", url, typequestion)
 
 const activePanel = () => emit("isActivePanel")
 
@@ -62,6 +62,10 @@ function show() {
                 <span class="list-group-item list-group-item-action" @click="addGroup('email.png', 5)"
                     style=" cursor: pointer"><i class="fa-solid fa-at"></i>
                     Email</span>
+
+                <span class="list-group-item list-group-item-action" @click="addGroup('date.png', 11)"
+                    style=" cursor: pointer"><i class="fa-regular fa-calendar-days"></i>
+                    Fecha</span>
 
 
                 <span :hidden="true" class="list-group-item list-group-item-action"

@@ -1,6 +1,6 @@
 <script setup>
 import { onMounted, ref, computed, defineAsyncComponent } from 'vue';
-import obtenerCookiesUsuario from '../../composables/cookies'
+import obtenerCookiesUsuario from '../../function/cookies'
 import ServiceQuestion from '../../services/takeSurvey/Questions'
 import ServiceResponse from '../../services/Response'
 import ServiceEncuestas from '../../services/takeSurvey/Survey'
@@ -9,7 +9,7 @@ import { useRouter } from 'vue-router'
 //import HeaderSurvey from '../HeaderSurvey.vue';
 import Loader from '../../components/Loader.vue'
 import LoaderSave from '../../components/LoaderSave.vue'
-import Entorno from '../../composables/entorno'
+import Entorno from '../../function/entorno'
 import generateUuid from 'generate-uuid';
 import axios from 'axios';
 //import LoadAnswerOptions from './LoadAnswerOptions.vue'
@@ -50,7 +50,6 @@ const service_encuesta = new ServiceEncuestas()
 const objUser = obtenerCookiesUsuario().objUser
 const userName = obtenerCookiesUsuario().userName
 
-let loader = ref(false)
 let loaderSave = ref(false)
 
 const props = defineProps({
@@ -73,10 +72,10 @@ onMounted(async () => {
     const where = {
         IdEncuesta: props?.idSurvey
     }
-    loader.value = true
+
     await service_question.unique({ params: where })
     question.value = [...bd_service_question.value]
-    loader.value = false
+
     // ORDENO DE FORMA ASCENDENTE A TRAVES DEL ORDERBY 
     question.value.sort((a, b) => a.OrderBy - b.OrderBy);
    } catch (error) {
@@ -86,8 +85,7 @@ onMounted(async () => {
 })
 
 async function sendSurvey() {
-    loaderSave.value = true
-    loader.value = true
+
 try {
     let table = [];
     let numResponse = props?.response
@@ -133,8 +131,6 @@ try {
         let score = null
 
         let sumScoreQuestion = null
-
-        let highestScore = null
 
 
         if (typeAnswer === TYPE_OBJECT) { //respuestas tipo archivo
@@ -197,9 +193,6 @@ try {
                 return total + (item.Score || 0);
             }, 0);
 
-            //Busco el Maximo Score entre las opciones que tiene la pregunta
-            highestScore = bd_service_answer.value.reduce((max, item) => item.Score > max ? item.Score : max, bd_service_answer.value[0].Score);
-
         }
 
         const data = {
@@ -209,14 +202,13 @@ try {
             TextoRespuesta: textoRespuesta,
             TipoRespuesta: typeAnswer,
             IdUserResponse: idUserResponse,
-            ScoreQuestion: sumScoreQuestion,
-            MaxScoreQuestion: highestScore
+            ScoreQuestion: sumScoreQuestion
         }
 
         if (score) data.Score = score // si tiene puntuacion le asigno el objecto
 
         loaderSave.value = true
-        service_response.add(data)
+        await service_response.add(data)
 
     }
 
@@ -226,7 +218,7 @@ try {
         Id: props?.idSurvey,
         Respuestas: numResponse
     }
-    await service_encuesta.update({ data: dataEncuesta }) // actualizo encuestas respondida
+    await service_encuesta.Update({ data: dataEncuesta }) // actualizo encuestas respondida
     loaderSave.value = false
     router.push({ name: 'endSurvey', params: { id: idUserResponse, idEncuesta: props?.idSurvey } });
 } catch (error) {
@@ -265,11 +257,10 @@ async function uploadArchive(num, file) {
     <div v-if="loaderSave">
         <LoaderSave />
     </div>
-    <div v-if="!loader">
+    <div v-if="!loaderSave">
         <!-- ENCABEZADO DE LA ENCUESTA -->
         <HeaderSurvey :idSurvey="props?.idSurvey" />
         <!-- FORMULARIO DE ENCUESTA -->
-
         <form id="msform" v-on:submit.prevent="sendSurvey">
             <div v-for="item, idx in question" :key="idx" class="card mt-3">
 
@@ -306,7 +297,7 @@ async function uploadArchive(num, file) {
                         />
                         <!-- loading state via #fallback slot -->
                         <template #fallback>
-                        Loading...
+                         Cargando por favor espere...
                         </template>
                     </Suspense>
 
@@ -321,11 +312,7 @@ async function uploadArchive(num, file) {
 
             </div>
 
-            <div v-if="!loader" class="actions">
-
-                <div v-if="loader">
-                    <Loader />
-                </div>
+            <div class="actions">
 
                 <button type="submit" class="mark-as-read read mb-2">
                     Enviar
