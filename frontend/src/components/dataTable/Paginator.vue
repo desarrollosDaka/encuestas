@@ -4,7 +4,7 @@ import TableLite from "vue3-table-lite";
 import axios from 'axios';
 import Entorno from '@/function/entorno'
 import Database from "@/function/database";
-import ModalUpdateField from '@/components/Modal/UpdateField.vue'
+import ModalUpdateField from '@/components/modal/updateField.vue'
 import buttonsGrouping from "../buttons_grouping/buttonsGrouping.vue";
 const { RUTA } = Entorno();
 
