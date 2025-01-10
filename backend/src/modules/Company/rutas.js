@@ -6,7 +6,7 @@ const controller = require("./controller");
 
 const router = express.Router();
 
-router.get("/", seguridad(), all); //select todos registros
+router.get("/", all); //select todos registros
 
 async function all(req, res) {
   try {

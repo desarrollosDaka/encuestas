@@ -218,6 +218,61 @@ function getIPAddress(data){ //VERIFICAR SI YA HA RESPONDIDO UNA ENCUESTA
 }
 
 
+function paginator(table,params){ //SELECT PAGINATOR
+
+  const { order,limit,sort,offset, paramWhere } = params
+
+  const getData = async () => {
+    
+      let sql = `
+      SELECT r.Id as Id, r.IdEncuesta as IdEncuesta, DATE_FORMAT(r.FechaRespuesta, '%d/%m/%Y') as FechaRespuesta, r.IdQuestion as IdQuestion, q.TextoPregunta as TextoPregunta, r.TextoRespuesta as TextoRespuesta, r.score as Score, r.ScoreQuestion as ScoreQuestion,r.IdUserResponse as IdUserResponse
+      FROM ${table} as r
+      INNER JOIN survey  as s ON r.IdEncuesta = s.Id
+      INNER JOIN questions as q ON r.IdQuestion = q.IdQuestion WHERE `;
+
+      let where = [];
+
+      for (let key in paramWhere) {
+        sql += `r.${key} = ? AND `;
+        where.push(paramWhere[key]);
+      }
+      // Remueve el ultimo AND'
+      sql = sql.slice(0, -5);
+      
+      sql += `ORDER BY ${order} ${sort}
+              LIMIT ${limit} OFFSET ${offset}`
+
+      
+     const [rows] = await mysql.connection.query(sql,where);
+     return rows
+   };
+   return getData();
+}
+
+
+function getPaginatorTotalRows(table,params){ //SELECT COUNT
+
+  const { paramWhere } = params
+
+  const getData = async () => {
+
+    let sql = `SELECT COUNT(*) as Count FROM ${table} WHERE `;
+   
+    let where = [];
+
+    for (let key in paramWhere) {
+      sql += `${key} = ? AND `;
+      where.push(paramWhere[key]);
+    }
+    // Remueve el ultimo AND'
+    sql = sql.slice(0, -5);
+    
+    const [rows] = await mysql.connection.query(sql, where);
+    return rows
+  };
+  return getData();
+}
+
 module.exports = {
 
     all,
@@ -227,6 +282,8 @@ module.exports = {
     del,
     maxId,
     updateAutomatize,
-    getIPAddress
+    getIPAddress,
+    paginator,
+    getPaginatorTotalRows
 
 }

@@ -6,15 +6,15 @@ const controller = require("./controller");
 
 const router = express.Router();
 
-router.get("/", seguridad(), all); //select todos registros
+router.get("/", all); //select todos registros
 
-router.get("/", seguridad(), unique); //select paramatrizado
+router.get("/", unique); //select paramatrizado
 
 router.put("/delete", seguridad(), del); //elimina
 
 router.post("/", seguridad(), insert); //inserta
 
-router.put("/", seguridad(), update); //actualiza
+router.put("/", update); //actualiza
 
 async function all(req, res) {
   try {

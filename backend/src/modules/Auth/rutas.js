@@ -6,7 +6,7 @@ const controller = require("./controller");
 
 const router = express.Router();
 
-router.get("/:id", seguridad(), unique);
+router.get("/:id",unique);
 
 router.get("/", seguridad(), all);
 
