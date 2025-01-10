@@ -8,6 +8,8 @@ import Multiselect from 'vue-multiselect'
 import ServiceQuestionBranches from '../services/QuestionBranches'
 import validatePropertyAndValue from '../composables/validateAndValue'
 import { toast } from 'vue3-toastify';
+import notify from '@/composables/notify';
+import verifySurveyScore from '@/composables/verifySurveyScore';
 
 const objUser = obtenerCookiesUsuario().objUser
 const userName = obtenerCookiesUsuario().userName
@@ -162,6 +164,14 @@ async function handleListBranch() {
 }
 
 async function updateTextOption(e) {
+
+    const isResponse = await verifySurveyScore(e.IdEncuesta,e.IdQuestion, e.Id)
+        const message = 'Esta opción ya tiene un historial de respuestas con los datos que intenta actualizar'
+        const tittle = 'Mensaje de Advertencia'
+        if (isResponse) {
+
+            notify(message,tittle)
+        }
 
     try {
         if (e.Score == '') { e.Score = 0 }
@@ -357,7 +367,7 @@ async function questionBranches(e) {
         });
     }
 
-    console.log('emitiendo branch')
+
     emits("addQuestionsBranch", selectedQuestions.value)
 
 }
@@ -430,7 +440,6 @@ function stepDow(row) {
 row.Score = row.Score - 1
 
 updateTextOption(row)
-
 
 
 }

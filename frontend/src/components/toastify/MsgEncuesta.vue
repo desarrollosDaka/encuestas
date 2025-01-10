@@ -4,14 +4,15 @@ const props = defineProps({
   closeToast: Function,
   toastProps: Object,
   idEncuesta: Number,
-  message:String
+  message:String,
+  tittle:String,
 });
 
 </script>
 
 <template>
   <div>
-    <p>¡ALERTA DE CONFIRMACIÓN!</p>
+    <p>{{props?.tittle ? tittle : '¡ALERTA DE CONFIRMACIÓN!'}}</p>
     <p>{{props?.message}}</p>
       <button @click="props.closeToast">
       OK

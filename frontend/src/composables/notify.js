@@ -2,7 +2,7 @@ import { h } from 'vue';
 import { toast } from 'vue3-toastify';
 import 'vue3-toastify/dist/index.css';
 import Msg from '../components/toastify/MsgEncuesta.vue';
-export default async function notify(msg) {
+export default async function notify(msg,header) {
 
     const id = toast.loading(
         'Verificando, por favor espere...',
@@ -15,7 +15,8 @@ export default async function notify(msg) {
     setTimeout(() => {
         toast.update(id, {
             render: () => h(Msg, { 
-                message:msg
+                message:msg,
+                tittle:header,
             }),
             autoClose: true,
             closeOnClick: true,
