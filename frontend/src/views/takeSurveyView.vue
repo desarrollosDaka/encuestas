@@ -2,9 +2,14 @@
 import { defineAsyncComponent } from 'vue'
 import { ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router'
+//import TakeSurvey from '../components/take_survey/TakeSurvey.vue'
+//import TakeSurveyVertical from '../components/take_survey_vertical/TakeSurveyVertical.vue'
+//import TakeSurveyVerticalJump from '../components/take_survey_vertical/TakeSurveyVerticalJump.vue'
 import ServiceSurvey from '../services/takeSurvey/Survey'
 import { toast } from 'vue3-toastify';
-import obtenerCookiesUsuario from '../composables/cookies'
+//import Spinner from '../components/Spinner.vue'
+//import CardError from '../components/CardError.vue'
+import obtenerCookiesUsuario from '../function/cookies'
 import ServiceQuestion from '../services/takeSurvey/Questions'
 
 
@@ -146,31 +151,31 @@ async function handleHasBranches() {
                   <!-- Fin formato encuesta -->
                   <!-- loading state via #fallback slot -->
                   <template #fallback>
-                    Loading...
+                    Cargando por favor espere...
                   </template>
                 </Suspense>
               </div>
 
               <div v-else>
 
-                <div v-if="!SURVEYJUMP">
+                <div>
                   <Suspense>
-                  <TakeSurveyVertical :idSurvey=idEncuesta :response=numResponse />
-                   <!-- loading state via #fallback slot -->
-                   <template #fallback>
-                    Loading...
-                  </template>
-                </Suspense>
-                </div>
-                <div v-else>
-                  <Suspense>
+                  <!-- <TakeSurveyVertical :idSurvey=idEncuesta :response=numResponse /> -->
                   <TakeSurveyVerticalJump :idSurvey=idEncuesta :response=numResponse />
                    <!-- loading state via #fallback slot -->
                    <template #fallback>
-                    Loading...
+                    Cargando por favor espere...
                   </template>
                 </Suspense>
                 </div>
+                <!-- <div v-else>
+                  <Suspense>
+                  <TakeSurveyVerticalJump :idSurvey=idEncuesta :response=numResponse />
+                   <template #fallback>
+                    Cargando por favor espere...
+                  </template>
+                </Suspense>
+                </div> -->
                 <!-- Fin formato encuesta -->
               </div>
 

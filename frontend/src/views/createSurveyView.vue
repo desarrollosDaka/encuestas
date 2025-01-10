@@ -5,11 +5,11 @@ import { useRoute, useRouter } from 'vue-router'
 import ToolBox from '../components/ToolBox.vue';
 import ServiceSurvey from '../services/Survey'
 import ServiceQuestion from '../services/Questions'
-import obtenerCookiesUsuario from '../composables/cookies'
+import obtenerCookiesUsuario from '../function/cookies'
 import { toast } from 'vue3-toastify';
 import Spinner from '../components/Spinner.vue'
-import Entorno from '../composables/entorno'
-
+import Entorno from '../function/entorno'
+import { useClipboard, useDark, useToggle } from '@vueuse/core';
 
 
 const QuestionChoice = defineAsyncComponent(() => 
@@ -64,6 +64,8 @@ let loading = ref(true)
 
 const linkSurvey = ref(RUTA_LINK)
 
+
+
 const indexQuestionOrder = ref(0)
 
 onMounted(async () => {
@@ -94,6 +96,7 @@ onMounted(async () => {
     } catch (error) {
         console.error(error)
     }
+
  //   activePanel() //inicializamos el componente con la caja de herramienta abierta
     
    
@@ -102,7 +105,7 @@ onMounted(async () => {
 const activePanel = () => isActivePanel.value = !isActivePanel.value;
 
 
-const addQuestion = (namearchive, typequestion, active) => {
+const addQuestion = (namearchive, typequestion) => {
 
     if(namearchive === null && typequestion === 9){
 
@@ -119,7 +122,7 @@ const addQuestion = (namearchive, typequestion, active) => {
     handleIndexQuestion()
     itemSelectOne.value.push({ show: true, typeQuestion: typeQuestion.value });
 
-    active ? activePanel() : null
+    activePanel()
 }
 
 
@@ -131,7 +134,7 @@ function deleteQuestion(index) {
 
 function back() {
 
-    router.push({name:"mysurveys"})
+    router.go(-1)
 
 }
 
@@ -164,19 +167,23 @@ setTimeout(() => {
 }
 
 function copyToClipboard() {
-      const textToCopy = document.getElementById('route_survey').textContent;
-      navigator.clipboard.writeText(textToCopy)
-        .then(() => {
-          toast.success('Texto copiado al portapapeles', {
-    position: toast.POSITION.TOP_CENTER,
-    theme: 'light',
-    autoClose:1000,
-  });
-        })
-        .catch(err => {
-          console.error('Error al copiar el texto: ', err);
-        });
-}
+    
+    const {text, copy, copied, isSupported } = useClipboard();
+
+    copy(linkSurvey.value)
+
+    toast.info("Link de la ruta copiado al portapapeles", {
+                        position: toast.POSITION.BOTTOM_RIGHT,
+                        transition: toast.TRANSITIONS.SLIDE,
+                        autoClose: 2000,
+                        theme: 'dark',
+                    });
+
+    const isDark = useDark() 
+
+    console.log(isDark.value)
+
+    }
 
 const changeType = async  () => {
 
@@ -194,35 +201,31 @@ const changeType = async  () => {
         Id: bdsurvey.value[0].Id,
         TypeSurvey: status
     }
-    await service_survey.update({data:data, token:token})
+    await service_survey.Update({data:data, token:token})
     window.location.reload()
 }
 
 const changeShowResultsEnd = async () => {
-    const status = !bdsurvey.value[0].ShowResultsEnd;
-
-    const data = {
-        Id: bdsurvey.value[0].Id,
-        ShowResultsEnd: status
-    };
-
-    await service_survey.update({ data: data, token: token });
-    window.location.reload();
-};
 
 
+var status
 
-const changeStartButton = async () => { 
-    const status = !bdsurvey.value[0].StartButton;
-
-    const data = { 
-        Id: bdsurvey.value[0].Id, 
-        StartButton: status 
-    }; 
-
-    await service_survey.update({ data: data, token: token }); 
-    window.location.reload();
+if (bdsurvey.value[0].ShowResultsEnd) {
+    status = false
 }
+
+if (!bdsurvey.value[0].ShowResultsEnd) {
+    status = true
+}
+
+const data = {
+    Id: bdsurvey.value[0].Id,
+    ShowResultsEnd: status
+}
+await service_survey.Update({ data: data, token: token })
+window.location.reload()
+}
+
 
 function addQuestionLibrary(){
 
@@ -277,34 +280,35 @@ async function handleIndexQuestion(){
 
 }
 
+
+
 </script>
 
 <template>
 
-<ToolSurvey v-if="bdsurvey[0]?.TypeSurvey"
-:viewMode="bdsurvey[0]?.TypeSurvey"
-:showResultsEnd=Boolean(bdsurvey[0]?.ShowResultsEnd)
-:nameSurvey="bdsurvey[0]?.Nombre" 
-:nameHeader="bdsurvey[0]?.Encabezado"
-:startButton=Boolean(bdsurvey[0]?.StartButton)
-:isSurvey=true
-:istools=true
-:isAnalisis=true 
-@goBack="back"
-@reviewMode="changeType"
-@showResultsEnd="changeShowResultsEnd"
-@startButton="changeStartButton"
-@library="viewLibrary"
-@libraryImages="viewLibraryImages"
-@orderQuestions="viewOrderQuestions"
-@itemSelectOne=addQuestion
-/>
+        <ToolSurvey v-if="bdsurvey[0]?.TypeSurvey"
+            :viewMode="bdsurvey[0]?.TypeSurvey"
+            :showResultsEnd=Boolean(bdsurvey[0]?.ShowResultsEnd)
+            :nameSurvey="bdsurvey[0]?.Nombre" 
+            :nameHeader="bdsurvey[0]?.Encabezado"
+            :isSurvey=true
+            :istools=true
+            :isAnalisis=true 
+            @goBack="back"
+            @reviewMode="changeType"
+            @showResultsEnd="changeShowResultsEnd"
+            @library="viewLibrary"
+            @libraryImages="viewLibraryImages"
+            @orderQuestions="viewOrderQuestions"
+            @itemSelectOne=addQuestion
+        />
 
 <div id="container">
+
 <div v-if="loading"> <Spinner /></div>
 
     <div class="wave-group mb-2 mt-3">
-            <input class="input" type="text" :value=linkSurvey />
+            <input class="input" type="text" :value=linkSurvey @click="copyToClipboard"/>
             <span class="bar"></span>
             <label class="label">
                 <span class="label-char" >Link de la encuesta o formulario</span>
@@ -330,7 +334,7 @@ async function handleIndexQuestion(){
                   <!-- AQUI LOS COMPONENTES PARA AGREGAR LAS PREGUNTAS -->
                   <div v-for="(question, index) in itemSelectOne" :key="index">
                 <Suspense>
-                    <!-- COMPONENTE SELECCIONAR UNA -->
+          
                     <QuestionChoice v-if="question.show"
                     :key=index
                     :index = index

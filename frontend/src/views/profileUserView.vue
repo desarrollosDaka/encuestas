@@ -2,8 +2,8 @@
 import { onMounted, ref } from "vue"
 import AuthService from "../services/AuthServices"
 import PasswordForm from '../components/PasswordForm.vue'
-import ObtenerFecha from '../composables/ObtenerFecha';
-import obtenerCookiesUsuario from '../composables/cookies'
+import ObtenerFecha from '../function/ObtenerFecha';
+import obtenerCookiesUsuario from '../function/cookies'
 import { toast } from 'vue3-toastify';
 import UuidService from "../services/GenerateUUID"
 
@@ -25,7 +25,7 @@ const Uuid_Service = new UuidService()
 onMounted(async () => {
 
   try {
-    await service.GetDataUser(userName, token)
+    await service.GetDataUser(userName)
     nombreusuario.value = Bd.value[0]?.Nombre
     usuario.value = Bd.value[0]?.Usuario
     idUsuario.value = Bd.value[0]?.Id

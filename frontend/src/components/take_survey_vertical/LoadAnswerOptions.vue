@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import ServiceAnswerOptions from '../../services/takeSurvey/AnswerOptions'
-import obtenerCookiesUsuario from '../../composables/cookies'
+import obtenerCookiesUsuario from '../../function/cookies'
 import Loader from '../../components/Loader.vue'
 import InputFile from '../../components/InputTypeFile.vue'
 
@@ -19,6 +19,8 @@ const selectListItem = ref('')
 const textAnswer = ref('')
 
 const textEmail = ref('')
+
+const textDate = ref('')
 
 const file = ref('')
 
@@ -84,6 +86,7 @@ onMounted(async () => {
     }
     loader.value = true
     await service_answer.unique({ params: whereAnswer })
+
     loader.value = false
 
 })
@@ -135,6 +138,9 @@ function initializeObjects() {
 
     // OPCION TIPO EMAIL
     textEmail.value ? emits("answers", textEmail.value, props?.idQuestion) : null
+
+     // OPCION TIPO FECHA
+     textDate.value ? emits("answers", textDate.value, props?.idQuestion) : null
 
     // OPCIONES TIPO CHECKBOX
     Object.keys(checkedNames.value).length ? emits("answers", Object.keys(checkedNames.value).filter(key => checkedNames.value[key]), props?.idQuestion) : null
@@ -230,7 +236,7 @@ function initializeObjects() {
             <input class="text-question" type="text" :maxlength="numberOfCharacters" placeholder="" @change="send" :required="props?.requiredQuestion"
                 v-model="textAnswer">
                 <div>
-                <!-- <span>{{textAnswer.length }} / {{numberOfCharacters}}</span> -->
+                <span>{{textAnswer.length }} / {{numberOfCharacters}}</span>
             </div>
         </div>
     </div>
@@ -246,6 +252,20 @@ function initializeObjects() {
         <div v-if="!loader" class="position-relative">
             <input class="text-question" type="email" placeholder="" @change="send" :required="props?.requiredQuestion"
                 v-model="textEmail">
+        </div>
+
+    </div>
+
+
+    
+    <!-- RESPUESTA TIPO FECHA -->
+    <div v-if="[11].includes(props.idTipreg)">
+        <div v-if="loader">
+            <Loader />
+        </div>
+        <div v-if="!loader" class="position-relative">
+            <input class="text-question" type="date" placeholder="" @change="send" :required="props?.requiredQuestion"
+                v-model="textDate">
         </div>
 
     </div>

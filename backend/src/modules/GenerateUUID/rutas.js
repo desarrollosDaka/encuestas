@@ -8,9 +8,9 @@ const router = express.Router();
 
 router.get("/:id", unique);
 
-router.put("/", seguridad(), del);
+router.put("/", del);
 
-router.post("/", seguridad(), insert);
+router.post("/", insert);
 
 async function insert(req, res, next) {
   try {

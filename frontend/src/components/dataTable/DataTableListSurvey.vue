@@ -1,15 +1,15 @@
 <script setup>
 
-import { computed, defineProps, ref } from 'vue';
+import { computed, defineProps, ref, onMounted } from 'vue';
 import SearchForm from './SearchForm.vue';
 import ServiceEncuestas from '../../services/Survey'
 import ServiceQuestion from '../../services/Questions'
-import obtenerCookiesUsuario from '../../composables/cookies'
-import ObtenerFecha from '../../composables/ObtenerFecha';
+import obtenerCookiesUsuario from '../../function/cookies'
+import ObtenerFecha from '../../function/ObtenerFecha';
 import generateUuid from 'generate-uuid';
 import { toast } from 'vue3-toastify';
-import FormatearFecha from '../../composables/FormatearFecha'
-
+import FormatearFecha from '../../function/FormatearFecha'
+import ServiceDepartments from "@/services/Departments"
 
 const service_question = new ServiceQuestion()
 
@@ -18,11 +18,21 @@ const service = new ServiceEncuestas()
 const userName = obtenerCookiesUsuario().userName
 const token = obtenerCookiesUsuario().token
 
+const serviceDepartments = new ServiceDepartments()
+const bd_departments = serviceDepartments.getFuentesData()
+
 const searchFilter = ref('')
 const radioFilter = ref('')
 const statusFilter = ref([])
 
+onMounted( async() =>{
 
+    const where = {
+        IdEmpresa: 'TD'
+        }
+        
+        await serviceDepartments.unique({ params: where, token: token }) // obtengo los datos de los departamentos por empresas
+})
 
 const props = defineProps({
     items: {
@@ -126,7 +136,7 @@ async function updateEstate(id, value) {
         FecAct: ObtenerFecha()
     }
 
-   await service.update({data:data, token:token})
+   await service.Update({data:data, token:token})
 
    emit("sayChange")
 }
@@ -137,9 +147,10 @@ async function generateLink(id) {
    // const generateLink = generateUuid(); //Generamos un Id unico
     const generateLink = Date.now() //Generamos un Id unico mas corto
 
-    toast.info('Link de la ruta generada', {
+    toast.success('Link de la ruta generada', {
         position: toast.POSITION.BOTTOM_CENTER,
         autoClose: 3000,
+        theme:'dark'
     });
 
 
@@ -150,8 +161,19 @@ async function generateLink(id) {
         FecAct: ObtenerFecha()
     }
 
-    await service.update({data:data,token:token})
+    await service.Update({data:data,token:token})
     emit("sayChange")
+}
+
+
+const getNameDepartments = (value) => {
+
+   
+    let departments = bd_departments.value.find( (element) =>  element.IdDepartments === value);
+
+    if(value.toUpperCase() === 'ALL') departments = {NameDepartments:'Admin'};
+    
+    return departments?.NameDepartments;
 }
 
 </script>
@@ -190,6 +212,7 @@ async function generateLink(id) {
                         </th>
                         <th class="text-uppercase text-start text-xxs fw-bold">
                         </th>
+                        <slot name="buttonEvaluations"></slot>
                     </tr>
                 </thead>
                 <tbody>
@@ -207,7 +230,7 @@ async function generateLink(id) {
                         <td class="text-uppercase text-xs text-start"> {{ FormatearFecha(row.FecCrea) }} </td>
                         <td class="text-uppercase text-xs text-start"> {{ row.UsrAct }} </td>
                         <td class="text-uppercase text-xs text-start"> {{ FormatearFecha(row.FecAct) }} </td>
-                        <td class="text-uppercase text-xs text-start"> {{ row.IdDepartments }} </td>
+                        <td class="text-uppercase text-xs text-start"> {{ getNameDepartments(row.IdDepartments) }} </td>
                         <td class="text-uppercase text-xs text-start">
 
 
@@ -248,6 +271,7 @@ async function generateLink(id) {
                                 </button>
                          
                         </td>
+                        <slot name="tdButtonsEvaluations" :idSurvey="row.Id"></slot>
                     </tr>
                 </tbody>
             </table>

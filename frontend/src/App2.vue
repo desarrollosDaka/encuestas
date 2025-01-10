@@ -1,5 +1,5 @@
 <script setup>
-import obtenerCookiesUsuario from './composables/cookies'
+import obtenerCookiesUsuario from './function/cookies'
 const setIsAuthenticated = $cookies.get(obtenerCookiesUsuario().nameCookies)
 import LOGIN from './views/authView.vue'
 

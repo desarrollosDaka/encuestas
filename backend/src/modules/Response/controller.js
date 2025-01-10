@@ -17,9 +17,24 @@ function unique(params) {
   return DB.unique(TABLE, params);
 }
 
+function update(body) {
+  return DB.updateAutomatize(TABLE, body);
+}
+
+function paginator(params) {
+  return DB.paginator(TABLE, params);
+}
+
+function paginatorTotalRows(params) {
+  return DB.getPaginatorTotalRows(TABLE, params);
+}
+
 
 module.exports = {
 
   insert,
-  unique
+  unique,
+  paginator,
+  paginatorTotalRows,
+  update
 };

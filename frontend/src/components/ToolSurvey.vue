@@ -10,10 +10,6 @@ const props = defineProps({
         type: Boolean,
         required: false
     },
-    startButton:{
-      type:Boolean,
-      require:false
-    },
     nameSurvey: {
         type: String,
         required: false
@@ -39,7 +35,7 @@ const props = defineProps({
 
 
 
-const emit = defineEmits(['goBack', 'reviewMode', 'library', 'orderQuestions','itemSelectOne', 'libraryImages', 'showResultsEnd', 'startButton'])
+const emit = defineEmits(['goBack', 'reviewMode', 'library', 'orderQuestions','itemSelectOne', 'libraryImages', 'showResultsEnd'])
 
 const activeGoBack = () => emit("goBack")
 
@@ -47,15 +43,13 @@ const activeReviewMode = () => emit("reviewMode")
 
 const activeShowResultsEnd = () => emit("showResultsEnd")
 
-const activeStartButton = () => emit("startButton")
-
 const activeLibrary = () => emit("library")
 
 const activeImages = () => emit("libraryImages")
 
 const activeOrderQuestions = () => emit("orderQuestions")
 
-const addGroup = (url, typequestion) => emit("itemSelectOne", url, typequestion, false)
+const addGroup = (url, typequestion) => emit("itemSelectOne", url, typequestion)
 
 </script>
 
@@ -78,8 +72,6 @@ const addGroup = (url, typequestion) => emit("itemSelectOne", url, typequestion,
       <li><a class="dropdown-item disabled" style=" cursor: pointer" @click="activeImages"><i class="fa-solid fa-image"></i> Biblioteca de imagenes</a></li>
 
       <li><a class="dropdown-item" style=" cursor: pointer" @click="activeOrderQuestions"><i class="fa-solid fa-sort"></i> Ordenar preguntas</a></li>
-
-      <li  :class="props?.startButton ? 'bg-danger' : 'bg-success'" ><a class="dropdown-item text-light" href="#" @click="activeStartButton"><i :class="props?.startButton ? 'fa-solid fa-eye-slash' : 'fa-regular fa-eye'"></i> {{ props?.startButton ? 'No mostrar botón de inicio' : 'Mostrar botón de inicio' }} </a></li>
 
       <li><hr class="dropdown-divider"></li>
       <li><a class="dropdown-item disabled" href="#">Descargar lista de preguntas</a></li>

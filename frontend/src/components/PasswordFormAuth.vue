@@ -1,11 +1,20 @@
 <script setup>
-import { defineEmits, ref, computed } from 'vue';
+import { defineEmits, ref, computed, onMounted } from 'vue';
+import { useLocalStorage } from "@vueuse/core";
 
 const password = ref()
 const MypasswordField = ref(null)
 let IconoPass = ref("fa-solid fa-eye")
+const storedPassword = useLocalStorage('Password-Cp', '')
 
+onMounted(() => {
 
+if (storedPassword.value) {
+    password.value = storedPassword.value;
+    emit("input-value",  password.value)
+}
+
+})
 
 const emit = defineEmits(['input-value'])
 

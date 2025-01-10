@@ -2,7 +2,7 @@ module.exports = {
   apps : [{
     name   : "DAKA_ENCUESTAS",
     script : "./index.js",
-    max_memory_restart: '300M',
+    max_memory_restart: '1024M',
     env_production: {
        NODE_ENV: "production",
        PORT: 4000,

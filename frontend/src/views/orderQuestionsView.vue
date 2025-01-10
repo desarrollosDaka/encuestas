@@ -2,8 +2,8 @@
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router'
 import ServiceQuestion from '../services/Questions';
-import obtenerCookiesUsuario from '../composables/cookies';
-import ObtenerFecha from '../composables/ObtenerFecha';
+import obtenerCookiesUsuario from '../function/cookies';
+import ObtenerFecha from '../function/ObtenerFecha';
 import { toast } from 'vue3-toastify';
 import ToolSurvey from '@/components/ToolSurvey.vue'
 

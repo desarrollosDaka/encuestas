@@ -1,10 +1,11 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import ServiceAnswerOptions from '../../services/takeSurvey/AnswerOptions'
-import obtenerCookiesUsuario from '../../composables/cookies'
+import obtenerCookiesUsuario from '../../function/cookies'
 import ServiceResponse from '../../services/Response'
 import Loader from '../../components/Loader.vue'
 import ShowFile from './ShowFile.vue'
+import formatearFecha from '@/function/FormatearFecha'
 
 const objUser = obtenerCookiesUsuario().objUser
 const userName = obtenerCookiesUsuario().userName
@@ -13,7 +14,7 @@ let answer_with_Icons = ref([]);
 
 const default_question_selection = ref([1, 2, 3]) // preguntas tipo seleccion
 
-const default_question_textResponse = ref([4, 5]) // preguntas tipo texto de una sola fila
+const default_question_textResponse = ref([4, 5, 11]) // preguntas tipo texto de una sola fila
 
 const default_question_files = ref([7]) // preguntas tipo images archivos
 
@@ -100,9 +101,7 @@ onMounted(async () => {
         await service_response.unique({ params: where_response })
 
         // LA RESPUESTA TEXTO DE UNA SOLA FILA
-        textResponse.value = bd_service_response.value[0]?.TextoRespuesta
-
-
+        textResponse.value = props.idTipreg === 11 ? formatearFecha(bd_service_response.value[0]?.TextoRespuesta) : bd_service_response.value[0]?.TextoRespuesta
 
         calculateIcons()
         loader.value = false

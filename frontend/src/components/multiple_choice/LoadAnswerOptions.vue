@@ -1,9 +1,9 @@
 <script setup>
 import { ref, onMounted, defineEmits } from 'vue';
 import ServiceAnswerOptions from '../../services/AnswerOptions'
-import obtenerCookiesUsuario from '../../composables/cookies'
-import ObtenerFecha from '../../composables/ObtenerFecha';
-import validatePropertyAndValue from '../../composables/validateAndValue'
+import obtenerCookiesUsuario from '../../function/cookies'
+import ObtenerFecha from '../../function/ObtenerFecha';
+import validatePropertyAndValue from '../../function/validateAndValue'
 import { toast } from 'vue3-toastify';
 import verifySurveyQuestionAnswer from '@/composables/verifySurveyQuestionAnswer';
 import notify from '@/composables/notify';
@@ -202,9 +202,15 @@ async function del(id, index) {
 
 const { idTipreg } = props;
 
-if ([4, 5].includes(idTipreg)) {
+if ([4, 5, 11].includes(idTipreg)) { //PREGUNTAS DE TIPO UNA SOLA FILA
     readonlyInput.value = true
-    placeholder.value = idTipreg === 4 ? 'Texto' : 'Email'
+    const placeholders = {
+        4: 'Texto',
+        11: 'Fecha',
+        };
+
+    placeholder.value = placeholders[idTipreg] || 'Email';
+    
 }
 
 

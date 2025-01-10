@@ -6,11 +6,11 @@ const controller = require("./controller");
 
 const router = express.Router();
 
-router.get("/", seguridad(), all); //select todos registros
+router.get("/", all); //select todos registros
 
 router.get("/unique", seguridad(), unique); //select paramatrizado
 
-router.put("/delete", seguridad(), del); //elimina
+router.delete("/delete", seguridad(), del); //elimina
 
 router.post("/", seguridad(), insert); //inserta
 
@@ -37,6 +37,7 @@ async function unique(req, res) {
 
 
 async function del(req, res, next) {
+
   try {
     const items = await controller.del(req.body.params);
     respuesta.success(req, res, "ITEM ELIMINADO SASTIFACTORIAMENTE", 200);

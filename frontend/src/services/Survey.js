@@ -1,10 +1,10 @@
 import { ref } from "vue";
 import axios from "axios";
-import Entorno from "../composables/entorno";
-import FormatearFecha from "../composables/FormatearFecha";
-import ErrorConnectios from "../composables/errorsConnection";
+import Entorno from "../function/entorno";
+import FormatearFecha from "../function/FormatearFecha";
+import ErrorConnectios from "../function/errorsConnection";
 import { toast } from "vue3-toastify";
-import Database from "../composables/database";
+import Database from "../function/database";
 
 const DB = Database();
 const { RUTA } = Entorno();
@@ -99,12 +99,13 @@ class Service {
     const url = `${RUTA}/Survey/delete`;
     let response = null;
     await axios
-      .put(
+      .delete(
         url,
-        { Id: Id },
         {
           headers: { Authorization: `Bearer ${token}` },
-        }
+          data:{ Id: Id }
+        },
+       
       )
       .then(function (resp) {
         response = resp;
@@ -128,7 +129,7 @@ class Service {
     return response;
   }
 
-  async update({data,token}) {
+  async Update({data,token}) {
     const url = `${RUTA}/Survey/`;
     let response = null;
     await axios.put(url, data,{

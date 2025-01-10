@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from 'vue';
-import navegadorAgent from '../composables/navigator';
+import navegadorAgent from '../function/navigator';
 
 
 const { ismovil } = navegadorAgent();

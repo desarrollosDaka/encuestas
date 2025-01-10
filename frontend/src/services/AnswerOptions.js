@@ -1,10 +1,10 @@
 import { ref } from 'vue'
 import axios from 'axios';
-import Entorno from '../composables/entorno'
-import FormatearFecha from '../composables/FormatearFecha'
-import  ErrorConnectios from '../composables/errorsConnection'
+import Entorno from '../function/entorno'
+import FormatearFecha from '../function/FormatearFecha'
+import  ErrorConnectios from '../function/errorsConnection'
 import { toast } from 'vue3-toastify';
-import Database from "../composables/database";
+import Database from "../function/database";
 
 const DB = Database()
 const { RUTA } = Entorno();
@@ -74,7 +74,7 @@ class Service{
               }
             });
             const json = await response.json();
-            this.data.value =  await json.body;
+            this.data.value = DB === "mysql" ? await json.body : await json.body["recordset"];
 
             this.data.value.forEach(item => {
                 item.FecCrea ? item.FecCrea = FormatearFecha(item.FecCrea) : null;
@@ -107,8 +107,9 @@ class Service{
         const url = `${RUTA}/AnswerOptions/delete`
       let response = null
 
-       await  axios.put(url, { params }, {
-          headers: { 'Authorization': `Bearer ${token}` }
+       await  axios.delete(url, {
+          headers: { 'Authorization': `Bearer ${token}` },
+          data:{ params }
       })
           .then(function (response) {
             response = response
@@ -142,13 +143,15 @@ class Service{
       headers: { 'Authorization': `Bearer ${token}` }
   })
         .then(function (response) {
-       
+           
           // toast.success("Registro actualizado", {
           //   position: toast.POSITION.BOTTOM_LEFT,
           //     transition: toast.TRANSITIONS.SLIDE,
           //     autoClose: 2000,
           //     theme: 'dark',
           // });
+
+          console.log(response)
 
         })
         .catch(function (error) {

@@ -11,7 +11,4 @@ import HOME from '@/views/homeView.vue';
 
 </template>
 
-<style scoped>
-
-</style>
 

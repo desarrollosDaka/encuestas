@@ -1,7 +1,7 @@
 <script setup>
 import { defineAsyncComponent } from 'vue'
 import { onMounted, ref, computed } from 'vue';
-import obtenerCookiesUsuario from '../../composables/cookies'
+import obtenerCookiesUsuario from '../../function/cookies'
 import ServiceQuestion from '../../services/takeSurvey/Questions'
 import ServiceAnswerOptions from '../../services/takeSurvey/AnswerOptions'
 import ServiceResponse from '../../services/Response'
@@ -9,11 +9,16 @@ import ServiceEncuestas from '../../services/takeSurvey/Survey'
 import ServiceQuestionsBranches from '../../services/takeSurvey/QuestionBranches'
 import { useRouter } from 'vue-router'
 import { toast } from 'vue3-toastify';
+//import HeaderSurvey from '../HeaderSurvey.vue';
 import Loader from '../../components/Loader.vue'
 import LoaderSave from '../../components/LoaderSave.vue'
-import Entorno from '../../composables/entorno'
+//import InputFile from '../../components/InputTypeFile.vue'
+import Entorno from '../../function/entorno'
 import generateUuid from 'generate-uuid';
 import axios from 'axios';
+//import EmptySurvey from './EmptySurvey'
+//import CardError from '@/components/CardError.vue'
+
 
 const HeaderSurvey = defineAsyncComponent(() =>
     import('../HeaderSurvey.vue')
@@ -258,6 +263,57 @@ async function removeQuestionBranches({ idEncuesta, idQuestionjump, Questions })
 
 }
 
+//  async function CheckQuestionBreak({ idEncuesta, idQuestionjump, questions }) {
+
+//     try {
+//         //VERIFICAMOS SI LA PREGUNTA TIENE UN SALTO IMCOMPLETED ITEM(todas las opciones no hacen saltos)
+//         const where = {
+//             IdEncuesta: idEncuesta,
+//             IdQuestion: questions,
+//             Jump: 1
+//         }
+
+//         const service_questions_check = new ServiceQuestion()
+//         const bd_service_questions_check = service_questions_check.getFuentesData()
+
+//         await service_questions_check.unique({ params: where })
+
+//         //VERIFICAMOS SI LA PREGUNTA TIENE UN SALTO
+//         if (bd_service_questions_check.value.length > 0) {
+
+//             if (idQuestionjump == '' || idQuestionjump == null) {
+
+//                 let arrayNotTheJump = []
+
+//                 //CONSULTAMOS CUAL ES LA OPCION QUE REALIZA EL SALTO
+//                 const where = {
+//                     IdEncuesta: idEncuesta,
+//                     IdQuestion: questions
+//                 }
+
+
+//                 const service_answer_questions = new ServiceAnswerOptions()
+//                 const bd_service_answer_questions = service_answer_questions.getFuentesData()
+
+//                 await service_answer_questions.unique({ params: where })
+
+//                 const filteredQuestions = bd_service_answer_questions.value.filter((questions) => questions.IdQuestionJump !== null)
+
+//                 filteredQuestions.forEach(element => {
+
+//                     // preguntas que no pertenecen al salto
+//                     arrayNotTheJump.push(element.IdQuestionJump)
+
+//                 });
+
+//                 question.value = question.value.filter((questions) => !arrayNotTheJump.includes(questions.IdQuestion));
+//             }
+
+//         }
+//     } catch (error) {
+//         console.error(error)
+//     }
+// }
 
 async function removeQuestionNotJump({ idEncuesta, idQuestionjump, questions }) {
 
@@ -375,6 +431,11 @@ async function goToNextQuestion() {
         // verifico si la pregunta tipo check es oblligatorio
         question.value[currentQuestionIndex.value].IdTipreg === 2 ? requiredQuestion(question.value[currentQuestionIndex.value].Required) : null
 
+        //remueve las preguntas que tienen asociado saltos
+        //       await removeQuestionOtherJump({ idEncuesta: question.value[currentQuestionIndex.value].IdEncuesta, idQuestionjump: IdQuestionJump.value, Questions: question.value[current_index].IdQuestion })
+
+        //removemos las preguntas que no son parte de la ramificacion de la opcion(pregunta) 
+        //       await removeQuestionBranches({ idEncuesta: question.value[currentQuestionIndex.value].IdEncuesta, idQuestionjump: IdQuestionJump.value, Questions: question.value[current_index].IdQuestion })
 
         if (IdQuestionJump.value) { //SI HAY UN SALTO DE PREGUNTA
 
@@ -516,6 +577,8 @@ function initializeObjects(idQuestion) {
     //OPCION TIPO FILE
     file.value ? answers.value[idQuestion] = file.value : null
 
+    // Object.keys(checkedNames.value).length ? answers.value[idQuestion] = Object.keys(checkedNames.value).filter(key => checkedNames.value[key]).join(", ") : null
+
 }
 
 async function addAnswerSurvey() {
@@ -564,8 +627,6 @@ async function addAnswerSurvey() {
             let score = null
 
             let sumScoreQuestion = null
-
-            let highestScore = null
 
 
             if (typeAnswer === TYPE_OBJECT) { //respuestas tipo archivo
@@ -626,10 +687,6 @@ async function addAnswerSurvey() {
                     return total + (item.Score || 0);
                 }, 0);
 
-                
-                //Busco el Maximo Score entre las opciones que tiene la pregunta
-                highestScore = bd_service_answer.value.reduce((max, item) => item.Score > max ? item.Score : max, bd_service_answer.value[0].Score);
-
             }
 
             const data = {
@@ -639,10 +696,8 @@ async function addAnswerSurvey() {
                 TextoRespuesta: textoRespuesta,
                 TipoRespuesta: typeAnswer,
                 IdUserResponse: idUserResponse,
-                ScoreQuestion: sumScoreQuestion,
-                MaxScoreQuestion: highestScore
+                ScoreQuestion: sumScoreQuestion
             }
-
 
             if (score) data.Score = score // si tiene puntuacion le asigno el objecto
 
@@ -657,7 +712,7 @@ async function addAnswerSurvey() {
             Id: props?.idSurvey,
             Respuestas: numResponse
         }
-        await service_encuesta.update({ data: dataEncuesta }) // actualizo encuestas respondida
+        await service_encuesta.Update({ data: dataEncuesta }) // actualizo encuestas respondida
 
         selectedOption.value = ''
         selectListItem.value = ''
@@ -913,7 +968,7 @@ const error = () => { isError.value = true }
                 <div v-if="!loader" class="position-relative">
                     <input class="text-question" :maxlength="numberOfCharacters" type="text" placeholder=""
                         :required="currentQuestion?.Required" v-model="textAnswer">
-                    <!-- <span>{{ textAnswer.length }} / {{ numberOfCharacters }}</span> -->
+                    <span>{{ textAnswer.length }} / {{ numberOfCharacters }}</span>
                 </div>
             </div>
 

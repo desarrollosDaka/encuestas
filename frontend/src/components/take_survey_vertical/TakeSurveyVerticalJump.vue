@@ -1,6 +1,6 @@
 <script setup>
 import { onMounted, ref, defineAsyncComponent, computed } from 'vue';
-import obtenerCookiesUsuario from '../../composables/cookies'
+import obtenerCookiesUsuario from '../../function/cookies'
 import ServiceQuestion from '../../services/takeSurvey/Questions'
 import ServiceResponse from '../../services/Response'
 import ServiceEncuestas from '../../services/takeSurvey/Survey'
@@ -8,7 +8,7 @@ import ServiceAnswerOptions from '../../services/takeSurvey/AnswerOptions'
 import { useRouter } from 'vue-router'
 import Loader from '../../components/Loader.vue'
 import LoaderSave from '../../components/LoaderSave.vue'
-import Entorno from '../../composables/entorno'
+import Entorno from '../../function/entorno'
 import generateUuid from 'generate-uuid';
 import axios from 'axios';
 
@@ -561,8 +561,6 @@ async function sendSurvey() {
 
             let sumScoreQuestion = null
 
-            let highestScore = null
-
 
             if (typeAnswer === TYPE_OBJECT) { //respuestas tipo archivo
 
@@ -622,10 +620,6 @@ async function sendSurvey() {
                     return total + (item.Score || 0);
                 }, 0);
 
-
-                //Busco el Maximo Score entre las opciones que tiene la pregunta
-                highestScore = bd_service_answer.value.reduce((max, item) => item.Score > max ? item.Score : max, bd_service_answer.value[0].Score);
-
             }
 
             const data = {
@@ -635,8 +629,7 @@ async function sendSurvey() {
                 TextoRespuesta: textoRespuesta,
                 TipoRespuesta: typeAnswer,
                 IdUserResponse: idUserResponse,
-                ScoreQuestion: sumScoreQuestion,
-                MaxScoreQuestion: highestScore
+                ScoreQuestion: sumScoreQuestion
             }
 
             if (score) data.Score = score // si tiene puntuacion le asigno el objecto
@@ -652,7 +645,7 @@ async function sendSurvey() {
             Id: props?.idSurvey,
             Respuestas: numResponse
         }
-        await service_encuesta.update({ data: dataEncuesta }) // actualizo encuestas respondida
+        await service_encuesta.Update({ data: dataEncuesta }) // actualizo encuestas respondida
         
         router.push({ name: 'endSurvey', params: { id: idUserResponse, idEncuesta: props?.idSurvey } });
 
@@ -781,8 +774,8 @@ function backSurvey() {
                         target="_blank">Tiendas Daka C.A</a></p>
             </div>
         </form>
-
-        <!-- <div v-if="loader">
+<!-- 
+        <div v-if="loader">
             <Loader />
         </div> -->
 
